@@ -29,6 +29,7 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html .nojekyll _site/
+          cp -r pulse _site/pulse
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
