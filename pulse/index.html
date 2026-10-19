@@ -327,9 +327,9 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .g-arrow svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .g-name{text-align:center;min-width:0}
 .g-no{font:700 10px var(--f-hud);letter-spacing:.3em;color:var(--muted)}
-.g-big{display:flex;align-items:baseline;justify-content:center;gap:10px;flex-wrap:wrap}
-.g-big b{font:italic 700 30px/1.1 var(--f-hud);letter-spacing:.1em;background:linear-gradient(90deg,#fff,#cfc2ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
-.g-big span{font:700 17px var(--f-hud);letter-spacing:.2em;color:var(--pink)}
+.g-big{display:flex;align-items:baseline;justify-content:center;gap:10px;flex-wrap:nowrap;white-space:nowrap}
+.g-big b{font:italic 700 clamp(22px,7.2vw,30px)/1.1 var(--f-hud);letter-spacing:.1em;background:linear-gradient(90deg,#fff,#cfc2ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.g-big span{font:700 clamp(13px,4.2vw,17px) var(--f-hud);letter-spacing:.14em;color:var(--pink)}
 .g-tag{font:700 10.5px var(--f-hud);letter-spacing:.18em;color:var(--cyan);margin-top:4px}
 .g-desc{margin:0;font:500 13px/1.5 var(--f-hud);color:#d9d5f2;min-height:3em}
 .g-dots{display:flex;justify-content:center;gap:8px}
