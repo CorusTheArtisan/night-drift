@@ -317,6 +317,31 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .go:disabled{opacity:.45;filter:saturate(.4);cursor:default}
 @media (prefers-reduced-motion:reduce){.slot.want .slit,.slot.busy .slit{animation:none}}
 
+/* garage: the car orbits above (beside, in landscape) a glass panel with its name, paint and the go key */
+#garage{left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));width:auto;max-width:520px;margin:0 auto}
+.g-head{position:fixed;top:calc(20px + env(safe-area-inset-top,0px));left:max(20px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:2px;pointer-events:none}
+.g-head .jp{font:500 13px var(--f-hud);letter-spacing:.5em;color:var(--cyan)}
+.g-head b{font:italic 700 34px/1 var(--f-hud);letter-spacing:.14em;text-shadow:0 0 18px rgba(139,92,255,.8)}
+.g-panel{gap:10px}
+.g-row{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:8px}
+.g-arrow svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.g-name{text-align:center;min-width:0}
+.g-no{font:700 10px var(--f-hud);letter-spacing:.3em;color:var(--muted)}
+.g-big{display:flex;align-items:baseline;justify-content:center;gap:10px;flex-wrap:wrap}
+.g-big b{font:italic 700 30px/1.1 var(--f-hud);letter-spacing:.1em;background:linear-gradient(90deg,#fff,#cfc2ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.g-big span{font:700 17px var(--f-hud);letter-spacing:.2em;color:var(--pink)}
+.g-tag{font:700 10.5px var(--f-hud);letter-spacing:.18em;color:var(--cyan);margin-top:4px}
+.g-desc{margin:0;font:500 13px/1.5 var(--f-hud);color:#d9d5f2;min-height:3em}
+.g-dots{display:flex;justify-content:center;gap:8px}
+.g-dots button{appearance:none;border:0;width:22px;height:5px;border-radius:3px;background:rgba(242,240,255,.18);padding:0}
+.g-dots button[aria-current="true"]{background:linear-gradient(90deg,var(--pink),var(--cyan));box-shadow:0 0 8px rgba(255,47,168,.6)}
+@media (orientation:landscape) and (max-height:620px){
+  #garage{left:auto;right:max(14px,env(safe-area-inset-right,0px));width:min(400px,46vw);max-width:none;margin:0;bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+  .g-panel{padding:10px 12px;gap:7px}.g-desc{font-size:12px;min-height:0}.g-big b{font-size:24px}.g-head b{font-size:26px}
+  #garage .set-note{display:none}
+}
+@media (orientation:landscape) and (min-height:621px){#garage{left:auto;right:max(24px,env(safe-area-inset-right,0px));width:min(460px,42vw);max-width:none;margin:0}}
+
 /* settings: the same glass panel as the title page; two columns when there is room */
 .row-start{display:grid;grid-template-columns:auto 1fr;gap:8px}
 .set-btn{display:flex;align-items:center;gap:8px;padding:12px 16px}
@@ -412,8 +437,6 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
       <li><span class="ico hy" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 8-12h-6z"/></svg></span><p data-i18n-html="i4"></p></li>
     </ol>
     <details class="howto-d"><summary data-i18n="howtoT">完整玩法</summary><p class="howto" id="howto"></p></details>
-    <div class="sub-t" data-i18n="colorT">车身颜色</div>
-    <div class="colors" id="colors"></div>
     <div class="row-start"><button class="ghost set-btn" id="setBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8z"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.4 7.4 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.4 7.4 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg><span data-i18n="setBtn">设置</span></button><button class="go" id="startBtn" data-i18n="start">开始</button></div>
   </div>
   <div class="credit">A GAME BY <b>Corus Z</b></div>
@@ -456,6 +479,23 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
   </div>
 </section>
 
+
+<section class="screen garage" id="garage" hidden aria-label="Garage">
+  <div class="g-head"><span class="jp">ガレージ</span><b data-i18n="garageT">选车</b></div>
+  <div class="panel g-panel">
+    <div class="g-row">
+      <button class="icon-btn g-arrow" id="carPrev" type="button" aria-label="Previous car"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="g-name"><div class="g-no" id="carNo">01 / 04</div><div class="g-big"><b id="carName">SHIDEN</b><span id="carJp">紫電</span></div><div class="g-tag" id="carTag"></div></div>
+      <button class="icon-btn g-arrow" id="carNext" type="button" aria-label="Next car"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <p class="g-desc" id="carDesc"></p>
+    <div class="g-dots" id="carDots"></div>
+    <div class="sub-t" data-i18n="colorT">车身颜色</div>
+    <div class="colors" id="colors"></div>
+    <p class="set-note" data-i18n="carNote">四台车只是外观不同</p>
+    <div class="c-go"><button class="ghost" id="garBack" type="button" data-i18n="back">返回</button><button class="go" id="garGo" type="button" data-i18n="goRun">出发</button></div>
+  </div>
+</section>
 
 <section class="screen set" id="settings" hidden aria-label="Settings">
   <div class="panel set-panel">
@@ -559,7 +599,9 @@ const LIVERIES = [
   { name: '珍珠白', en: 'Pearl White', body: 0xe6e8ef, glow: 0x46e3ff, rim: 0xb08a4a, rough: 0.26, metal: 0.3, coat: 1 },
   { name: '午夜紫', en: 'Midnight Purple', body: 0x3b2775, glow: 0xff3d8b, rim: 0xc9ccd6, rough: 0.2, metal: 0.75, coat: 1 },
   { name: '霓虹橙', en: 'Neon Orange', body: 0xff6f14, glow: 0x46e3ff, rim: 0x1b1b22, rough: 0.28, metal: 0.4, coat: 1 },
-  { name: '哑光黑', en: 'Matte Black', body: 0x1d1e24, glow: 0xb56bff, rim: 0xd4a84a, rough: 0.6, metal: 0.3, coat: 0.12 }
+  { name: '哑光黑', en: 'Matte Black', body: 0x1d1e24, glow: 0xb56bff, rim: 0xd4a84a, rough: 0.6, metal: 0.3, coat: 0.12 },
+  { name: '湾岸蓝', en: 'Wangan Blue', body: 0x1c47c9, glow: 0x46e3ff, rim: 0xc9ccd6, rough: 0.2, metal: 0.7, coat: 1 },
+  { name: '赛道黄', en: 'Track Yellow', body: 0xf2c200, glow: 0xff3d8b, rim: 0x1b1b22, rough: 0.25, metal: 0.35, coat: 1 }
 ];
 let liveryIdx = clamp(store.get('sp_livery', 1) | 0, 0, LIVERIES.length - 1);
 /* UI language: follows the phone (Chinese → 中文, anything else → English), switchable in the menu */
@@ -573,9 +615,9 @@ const I18N = {
     i2: '前车逼近时车下圆圈会填满，<b>满格那一刻</b>换道就是 <b>PERFECT</b>：正好卡在鼓点上，奖励 0.5 秒氮气。',
     i3: '<b>漂移弯</b>：压上粉色光带按住弯道一侧，过弯后在金色光带松手。两条光带都落在重拍上。',
     i4: '连续 PERFECT 进入 <b>HYPER</b>，5 秒无敌，直接把车流撞飞。追尾三次出局，侧面擦碰只断连击。',
-    howto: '车流按歌曲的节拍生成：每次需要换道的地方，你所在车道都会有一辆车正好在那个拍点抵达，车下圆圈满格的一瞬间换道就是 PERFECT（±0.1 秒），GREAT / GOOD 依次放宽。<b>简单</b>平均每秒约 1.5–2 下，跟着主拍走；<b>普通</b>约 2.3–2.8 下，转向点按每首歌实际的重音（鼓、贝斯、人声起音）来排，包括反拍和连点，偶尔有可以喘口气的空车道；<b>NEON DRIVE</b> 平均每秒 3 下，路线被锁死：你旁边的车道一直有车，只能沿着那一条路线、每一下都踩在点上，慢歌会出现十六分音符的连点。选歌台上可以打开<b>无敌模式</b>（追尾不扣车况，只断连击，这局不记最高分）和<b>辅助线</b>（路面上画出建议路线，转向的地方会变亮）。间奏会出现<b>漂移弯</b>：在粉色光带按住弯道那一侧开始漂移，一直按着，圆圈随过弯再次充满，到金色光带松手再拿一个 PERFECT。入弯尽量从内侧进，弯心车会被甩向外侧，最外道会擦墙。<b>碟口（CD）</b>：点收音机顶上的碟口放入你自己的 MP3 / M4A，浏览器在这台设备上分析节拍，自动排出三种难度和漂移弯；文件只存在这台设备的浏览器里，不会上传，别的玩家看不到，清除网站数据就会删掉。BAND 切到 CD 选碟，节拍快慢差一倍时用 BPM ½× / 2× 重新分析，EJECT 连按两次删除。电脑用 ← → 或 A D，空格暂停。',
+    howto: '车流按歌曲的节拍生成：每次需要换道的地方，你所在车道都会有一辆车正好在那个拍点抵达，车下圆圈满格的一瞬间换道就是 PERFECT（±0.1 秒），GREAT / GOOD 依次放宽。<b>简单</b>平均每秒约 1.5–2 下，跟着主拍走；<b>普通</b>约 2.3–2.8 下，转向点按每首歌实际的重音（鼓、贝斯、人声起音）来排，包括反拍和连点，偶尔有可以喘口气的空车道；<b>NEON DRIVE</b> 平均每秒 3 下，路线被锁死：你旁边的车道一直有车，只能沿着那一条路线、每一下都踩在点上，慢歌会出现十六分音符的连点。选歌台上可以打开<b>无敌模式</b>（追尾不扣车况，只断连击，这局不记最高分）和<b>辅助线</b>（路面上画出建议路线，转向的地方会变亮）。间奏会出现<b>漂移弯</b>：在粉色光带按住弯道那一侧开始漂移，一直按着，圆圈随过弯再次充满，到金色光带松手再拿一个 PERFECT。入弯尽量从内侧进，弯心车会被甩向外侧，最外道会擦墙。<b>碟口（CD）</b>：点收音机顶上的碟口放入你自己的 MP3 / M4A，浏览器在这台设备上分析节拍，自动排出三种难度和漂移弯；文件只存在这台设备的浏览器里，不会上传，别的玩家看不到，清除网站数据就会删掉。BAND 切到 CD 选碟，节拍快慢差一倍时用 BPM ½× / 2× 重新分析，EJECT 连按两次删除。选完歌和难度后进入<b>车库</b>：四台原创车（紫電 SHIDEN、雷神 RAIJIN GT、疾風 HAYATE、FALKE 9）和六种车漆，外观不同，操控和判定完全一样。电脑用 ← → 或 A D，空格暂停。',
     cdSlot: '放入你的歌 · MP3', cdNone: 'NO DISC · 点上方碟口', cdLocal: '只存在本机 · 不上传', cdFull: '碟盒已满 (10 张) · 先弹出一张', cdBig: '文件太大 · 限 40 MB', cdLen: '歌曲长度要在 40 秒到 10 分钟之间',
-    cdNoBeat: '找不到稳定的节拍 · 换一首试试', cdBad: '读不了这个文件 · 换 MP3 / M4A 试试', cdHave: '这张已经在碟盒里了', cdSession: '仅本次有效', cdRange: '超出范围', cdEjectQ: '再按一次 EJECT 删除这张碟', cdTempoT: '节拍快/慢了一倍？', cdLoose: '节拍可能对不太准',
+    cdNoBeat: '找不到稳定的节拍 · 换一首试试', cdBad: '读不了这个文件 · 换 MP3 / M4A 试试', cdHave: '这张已经在碟盒里了', cdSession: '仅本次有效', cdRange: '超出范围', cdEjectQ: '再按一次 EJECT 删除这张碟', cdTempoT: '节拍快/慢了一倍？', garageT: '选车', goRun: '出发', carNote: '四台车只是外观不同，操控和判定完全一样。拖动画面可以转着看。', cdLoose: '节拍可能对不太准',
     setBtn: '设置', setT: '设置', done: '完成', setAudio: '声音', delayL: '节拍延迟', calib: '校准',
     delayNote: '声音比画面晚就往 + 调（每下 5 ms）；蓝牙耳机通常 +150 ~ +250 ms。也可以点「校准」：先听 4 下，再跟着嗒声点 8 下，自动测出延迟。',
     calTap: '跟着嗒声点这里（或空格）', calLead: '先听 4 下…', calDone: '已设为', calN: ' 下', calFew: '点得太少，再试一次',
@@ -595,9 +637,9 @@ const I18N = {
     i2: 'The ring under your car fills as the car ahead closes in. Switch <b>the moment it is full</b> for a <b>PERFECT</b>, right on the hit, plus half a second of nitro.',
     i3: '<b>Drift corners</b>: press and hold the side the road bends to on the pink band, let go on the gold band. Both bands sit on a downbeat.',
     i4: 'Chain PERFECTs to go <b>HYPER</b>: five seconds of invincibility that sends traffic flying. Three rear-ends and you are out; side scrapes only break the combo.',
-    howto: 'Traffic is written from the song: wherever you have to move, a car in your lane arrives exactly on that hit, so switching the moment the ring under your car is full is a PERFECT (±0.1 s); GREAT and GOOD are looser. <b>EASY</b> averages about 1.5–2 taps a second on the main beat; <b>NORMAL</b> about 2.3–2.8, every turn on a real accent in the track (kick, bass, vocal onsets), off-beats and double taps included, with the odd open lane to breathe in; <b>NEON DRIVE</b> averages 3 a second on a locked route: the lanes beside you are always taken, so the only way through is the one line, hitting every note, with sixteenth-note doubles on the slow songs. On the radio console you can switch on <b>NO FAIL</b> (rear-ends only cost the combo; the run is not saved as a best) and the <b>GUIDE LINE</b> (the suggested route drawn on the road, brighter where it swerves). Breaks bring <b>drift corners</b>: hold the side the road bends to on the pink band, keep holding while the ring fills again through the corner, release on the gold band for another PERFECT. Enter from the inside; the apex flings you outward and the outer lane scrapes the wall. <b>The CD slot</b>: tap the slot on top of the radio to load your own MP3 / M4A. The beat is analysed in your browser on this device and all three difficulties and the drift corners are written from it; the file stays in this browser only, is never uploaded and no other player can see it (clearing the site data deletes it). BAND to CD picks a disc, BPM ½× / 2× re-reads it when the tempo comes out doubled or halved, EJECT twice deletes it. Keyboard: ← → or A D, Space to pause.',
+    howto: 'Traffic is written from the song: wherever you have to move, a car in your lane arrives exactly on that hit, so switching the moment the ring under your car is full is a PERFECT (±0.1 s); GREAT and GOOD are looser. <b>EASY</b> averages about 1.5–2 taps a second on the main beat; <b>NORMAL</b> about 2.3–2.8, every turn on a real accent in the track (kick, bass, vocal onsets), off-beats and double taps included, with the odd open lane to breathe in; <b>NEON DRIVE</b> averages 3 a second on a locked route: the lanes beside you are always taken, so the only way through is the one line, hitting every note, with sixteenth-note doubles on the slow songs. On the radio console you can switch on <b>NO FAIL</b> (rear-ends only cost the combo; the run is not saved as a best) and the <b>GUIDE LINE</b> (the suggested route drawn on the road, brighter where it swerves). Breaks bring <b>drift corners</b>: hold the side the road bends to on the pink band, keep holding while the ring fills again through the corner, release on the gold band for another PERFECT. Enter from the inside; the apex flings you outward and the outer lane scrapes the wall. <b>The CD slot</b>: tap the slot on top of the radio to load your own MP3 / M4A. The beat is analysed in your browser on this device and all three difficulties and the drift corners are written from it; the file stays in this browser only, is never uploaded and no other player can see it (clearing the site data deletes it). BAND to CD picks a disc, BPM ½× / 2× re-reads it when the tempo comes out doubled or halved, EJECT twice deletes it. After the song and difficulty comes the <b>garage</b>: four original cars (SHIDEN, RAIJIN GT, HAYATE, FALKE 9) and six paints; they look different and drive and judge exactly the same. Keyboard: ← → or A D, Space to pause.',
     cdSlot: 'INSERT YOUR MP3', cdNone: 'NO DISC · TAP THE SLOT', cdLocal: 'STAYS ON THIS DEVICE', cdFull: 'CHANGER FULL (10) · EJECT ONE FIRST', cdBig: 'FILE TOO BIG · 40 MB MAX', cdLen: 'SONGS MUST RUN 40 S - 10 MIN',
-    cdNoBeat: 'NO STEADY BEAT FOUND · TRY ANOTHER', cdBad: 'CANNOT READ THIS FILE · TRY MP3 / M4A', cdHave: 'ALREADY IN THE CHANGER', cdSession: 'THIS SESSION ONLY', cdRange: 'OUT OF RANGE', cdEjectQ: 'PRESS EJECT AGAIN TO DELETE THIS DISC', cdTempoT: 'TEMPO DOUBLED / HALVED?', cdLoose: 'BEAT MAY DRIFT',
+    cdNoBeat: 'NO STEADY BEAT FOUND · TRY ANOTHER', cdBad: 'CANNOT READ THIS FILE · TRY MP3 / M4A', cdHave: 'ALREADY IN THE CHANGER', cdSession: 'THIS SESSION ONLY', cdRange: 'OUT OF RANGE', cdEjectQ: 'PRESS EJECT AGAIN TO DELETE THIS DISC', cdTempoT: 'TEMPO DOUBLED / HALVED?', garageT: 'GARAGE', goRun: 'GO', carNote: 'Looks only: every car handles and judges exactly the same. Drag the view to walk around it.', cdLoose: 'BEAT MAY DRIFT',
     setBtn: 'SETTINGS', setT: 'SETTINGS', done: 'DONE', setAudio: 'SOUND', delayL: 'BEAT DELAY', calib: 'CALIBRATE',
     delayNote: 'If the sound arrives later than the picture, go + (5 ms a step); Bluetooth headphones are usually +150 to +250 ms. Or CALIBRATE: listen to 4 clicks, tap along to the next 8, and the delay is measured.',
     calTap: 'TAP ON EACH CLICK (OR SPACE)', calLead: 'LISTEN FOR 4…', calDone: 'SET TO', calN: ' taps', calFew: 'TOO FEW TAPS, TRY AGAIN',
@@ -3417,22 +3459,153 @@ const SPAWN_T = 5.6;    // rows appear 5.6 s (~320 m) before they arrive
 const deg = Math.PI / 180;
 const CAM_ELEV = 16.9 * deg; // camera sits ~17° above the car (was ~7°)
 
-/* ---------- player car: original low hypercar ---------- */
+/* ---------- player cars: four original designs (no real makes, names or badges) ----------
+   Every body is lofted from the same profile functions (half width, sill, beltline/deck, wheel arches, roof line); a car is
+   a set of numbers for those curves plus its own lights, wings and vents. All cars are 4.9 m long and drive exactly the
+   same: the choice is only how it looks. */
 let reflMat, car, carBody, bodyMat, accentMat, rimMat, calMat, glowMat, carLight, headLight, flameL, flameR, ghostGeo, aura;
 const wheels = [];
 const flows = [], pRings = [];
 const HC = { AXF: 1.5, AXR: -1.38, AY: 0.35, RT: 0.35 };
+const AF0 = [[0.14, 0], [0.1, -0.018], [0.0, -0.026], [-0.12, -0.012], [-0.15, 0.004], [-0.06, 0.01], [0.08, 0.008]];
+const airfoil = (k, tilt) => AF0.map(([z, y]) => [(z * Math.cos(tilt) - y * Math.sin(tilt)) * k, (z * Math.sin(tilt) + y * Math.cos(tilt)) * k]);
+const CARS = [
+  { /* 01 the original: a low midship hypercar, split light bar, roof-fed wing */
+    id: 'shiden', name: 'SHIDEN', jp: '紫電', tagZh: '中置超跑 · 一号车', tagEn: 'MIDSHIP HYPERCAR · No.1',
+    descZh: '一号车。低矮的中置超跑：分体光带尾灯、车顶导流尾翼、侧裙上的一线霓虹。', descEn: 'No.1. A low midship hypercar: split light-bar tail, roof-fed wing, a neon line along the sills.',
+    HC: { AXF: 1.5, AXR: -1.38, AY: 0.35, RT: 0.35 }, hw: { w: 0.9, ff: 0.1, rf: 0.17, nz: 1.95, nk: 0.34, tz: -2.0, tk: 0.28 },
+    base: (z) => (z > 0.85 ? 0.66 - (z - 0.85) * 0.14 : z > -1.1 ? 0.66 + (0.85 - z) * 0.05 : 0.7575 + Math.min(1, (-1.1 - z) / 0.9) * 0.08),
+    arch: { af: 0.07, afy: 0, ar: 0.12, ary: 0.03 }, roof: { c0: 0.95, r0: 0.0, top: 1.1, slope: 0.02, r1: -0.6, e: -2.0, fw: 1.9, rp: 1.35 }, gt: 0.5, gw: 0.7,
+    track: [0.83, 0.89], rearTyre: 1.15, spokes: 7, tl: [0.5, 0.79, -2.47], hl: [0.5, 0.45, 2.42], ex: [0.16, 0.34, -2.62],
+    detail(b) {
+      const { paint, cf, ch, head, tail, acc } = b;
+      cf.box(0, 0.17, 2.3, 1.7, 0.03, 0.36);
+      cf.box(0, 0.31, 2.44, 1.0, 0.1, 0.03);
+      for (const sd of [1, -1]) {
+        head.box(sd * 0.56, 0.45, 2.31, 0.42, 0.026, 0.06, 0, sd * 0.36, 0);
+        head.box(sd * 0.5, 0.28, 2.43, 0.22, 0.018, 0.02);
+        cf.box(sd * 0.62, 0.3, 2.36, 0.28, 0.1, 0.04);
+        paint.box(sd * 0.82, 0.88, 0.62, 0.15, 0.07, 0.12); cf.box(sd * 0.74, 0.85, 0.62, 0.1, 0.02, 0.04);
+        cf.box(sd * (hHW(-0.1) + 0.012), 0.22, -0.1, 0.06, 0.06, 1.7);
+        acc.box(sd * (hHW(-0.1) + 0.045), 0.255, -0.1, 0.006, 0.014, 1.7);
+        cf.box(sd * (hHW(-0.75) + 0.004), 0.5, -0.75, 0.012, 0.16, 0.5);
+        tail.box(sd * 0.46, 0.79, -2.452, 0.78, 0.034, 0.02);
+        tail.box(sd * 0.84, 0.74, -2.43, 0.03, 0.13, 0.06);
+        cf.box(sd * 0.48, 0.93, -2.16, 0.02, 0.18, 0.12, -0.25, 0, 0);
+        acc.box(sd * 0.48, 1.005, -2.16, 0.022, 0.01, 0.2);
+        ch.lathe([[0.0, 0.0], [0.07, 0.0], [0.07, -0.17], [0.056, -0.17], [0.056, -0.02], [0.0, -0.02]], 14, 'z', sd * 0.16, 0.34, -2.33);
+      }
+      cf.box(0, 0.56, -2.455, 1.5, 0.36, 0.02);
+      for (let k = -2; k <= 2; k++) cf.box(k * 0.22, 0.25, -2.25, 0.02, 0.18, 0.46);
+      cf.box(0, 0.17, -2.25, 1.5, 0.02, 0.46);
+      cf.prismX(airfoil(1, 0.08), -0.86, 0.86, 1.02, -2.2);
+    }
+  },
+  { /* 02 a front-engine GT coupe: long bonnet, boxed flares, notchback, a tall wing and four round tail lamps */
+    id: 'raijin', name: 'RAIJIN GT', jp: '雷神', tagZh: '前置后驱 GT · 直六双涡轮', tagEn: 'FRONT-ENGINE GT · STRAIGHT-SIX TWIN TURBO',
+    descZh: '长车头的前置 GT：方正的宽体轮眉、高高的尾翼、四盏圆形尾灯，首都高夜里最熟悉的背影。', descEn: 'A long-nosed front-engine GT: boxed flares, a tall wing and four round tail lamps, the most familiar shape on a Shutoko night.',
+    HC: { AXF: 1.42, AXR: -1.33, AY: 0.34, RT: 0.34 }, hw: { w: 0.9, ff: 0.08, rf: 0.12, nz: 2.05, nk: 0.22, tz: -2.2, tk: 0.25 },
+    base: (z) => (z > 0.5 ? 0.8 - (z - 0.5) * 0.07 : z > -1.35 ? 0.8 + (0.5 - z) * 0.015 : 0.8278 + Math.min(1, (-1.35 - z) / 0.8) * 0.05),
+    arch: { af: 0.05, afy: 0, ar: 0.08, ary: 0.02 }, roof: { c0: 0.5, r0: -0.35, top: 1.24, slope: 0.012, r1: -0.95, e: -1.72, fw: 1.5, rp: 1.15 }, gt: 0.52, gw: 0.7,
+    track: [0.82, 0.86], rearTyre: 1.1, spokes: 6, tl: [0.51, 0.8, -2.5], hl: [0.6, 0.58, 2.44], ex: [0.55, 0.3, -2.6],
+    detail(b) {
+      const { paint, cf, ch, head, tail, acc } = b;
+      cf.box(0, 0.17, 2.32, 1.75, 0.03, 0.34);              // splitter
+      cf.box(0, 0.33, 2.43, 1.25, 0.2, 0.04);               // wide lower grille
+      for (let k = -3; k <= 3; k++) cf.box(k * 0.17, 0.33, 2.445, 0.012, 0.18, 0.02);
+      cf.box(0, hBase(1.35) + 0.008, 1.35, 0.52, 0.02, 0.42); // bonnet vent
+      for (const sd of [1, -1]) {
+        cf.box(sd * 0.6, 0.58, 2.4, 0.5, 0.1, 0.05, 0, sd * 0.22, 0);
+        head.box(sd * 0.6, 0.585, 2.425, 0.44, 0.045, 0.02, 0, sd * 0.22, 0);
+        cf.box(sd * (hHW(0) + 0.01), 0.21, 0, 0.06, 0.07, 1.85);   // sill
+        acc.box(sd * (hHW(0) + 0.042), 0.235, 0, 0.006, 0.012, 1.85);
+        cf.box(sd * (hHW(0.95) + 0.005), 0.56, 0.95, 0.012, 0.09, 0.32); // fender vent
+        /* four round tail lamps: a red ring, a bright dot, a dark housing */
+        for (const x of [0.37, 0.66]) {
+          cf.lathe([[0, 0], [0.135, 0], [0.135, -0.045], [0, -0.045]], 22, 'z', sd * x, 0.79, -2.44);
+          tail.lathe([[0.06, 0], [0.118, 0], [0.118, -0.03], [0.06, -0.03]], 22, 'z', sd * x, 0.79, -2.465);
+          tail.lathe([[0, 0], [0.028, 0], [0.028, -0.02], [0, -0.02]], 12, 'z', sd * x, 0.79, -2.47);
+        }
+        cf.box(sd * 0.56, 1.04, -2.12, 0.04, 0.32, 0.12, 0.12, 0, 0);   // wing stands
+        cf.box(sd * 0.9, 1.21, -2.16, 0.02, 0.16, 0.44);                // end plates
+        ch.lathe([[0.0, 0.0], [0.085, 0.0], [0.085, -0.17], [0.07, -0.17], [0.07, -0.02], [0.0, -0.02]], 16, 'z', sd * 0.55, 0.3, -2.36);
+      }
+      cf.prismX(airfoil(1.35, 0.1), -0.9, 0.9, 1.21, -2.16);
+      cf.box(0, 0.24, -2.3, 1.5, 0.02, 0.42);
+      for (let k = -2; k <= 2; k++) cf.box(k * 0.2, 0.31, -2.3, 0.02, 0.14, 0.42);
+      paint.box(0, hBase(-2.35) + 0.015, -2.36, 1.3, 0.025, 0.12);     // trunk lip
+    }
+  },
+  { /* 03 a 90s midship wedge: pop-up lamps, wraparound canopy, sail panels, a full-width tail strip */
+    id: 'hayate', name: 'HAYATE', jp: '疾風', tagZh: '中置 V6 · 九十年代', tagEn: 'MIDSHIP V6 · 1990s',
+    descZh: '九十年代的中置楔形车：弹出式大灯、包裹式座舱玻璃、车顶两侧的飞扶壁、贯穿式尾灯。', descEn: 'A 90s midship wedge: pop-up headlamps, a wraparound canopy, flying buttresses and a full-width tail strip.',
+    HC: { AXF: 1.48, AXR: -1.25, AY: 0.33, RT: 0.33 }, hw: { w: 0.87, ff: 0.05, rf: 0.11, nz: 1.75, nk: 0.36, tz: -2.15, tk: 0.22 },
+    base: (z) => (z > 1.05 ? 0.7 - (z - 1.05) * 0.13 : z > -1.05 ? 0.7 + (1.05 - z) * 0.055 : 0.8155 + Math.min(1, (-1.05 - z) / 1.3) * 0.075),
+    arch: { af: 0.04, afy: 0, ar: 0.07, ary: 0.02 }, roof: { c0: 1.05, r0: 0.2, top: 1.1, slope: 0, r1: -0.42, e: -1.12, fw: 2.3, rp: 0.85 }, gt: 0.5, gw: 0.74,
+    track: [0.8, 0.85], rearTyre: 1.12, spokes: 10, tl: [0.6, 0.8, -2.48], hl: [0.55, 0.78, 2.03], ex: [0.12, 0.3, -2.55],
+    detail(b) {
+      const { paint, cf, ch, head, tail, acc } = b;
+      cf.box(0, 0.17, 2.3, 1.6, 0.03, 0.3);
+      cf.box(0, 0.28, 2.42, 1.05, 0.08, 0.04);
+      for (const sd of [1, -1]) {
+        const y = hBase(1.9);
+        paint.box(sd * 0.55, y + 0.07, 1.9, 0.4, 0.14, 0.22);          // pop-up lamp, raised
+        cf.box(sd * 0.55, y + 0.075, 2.005, 0.36, 0.1, 0.012);
+        head.box(sd * 0.55, y + 0.078, 2.012, 0.32, 0.06, 0.01);
+        head.box(sd * 0.62, 0.3, 2.42, 0.22, 0.03, 0.02);              // bumper lamps
+        cf.box(sd * (hHW(-0.95) + 0.004), 0.56, -0.95, 0.014, 0.2, 0.5); // side intake
+        cf.box(sd * (hHW(0) + 0.01), 0.21, 0, 0.05, 0.06, 1.8);
+        acc.box(sd * (hHW(0) + 0.038), 0.232, 0, 0.006, 0.012, 1.8);
+        paint.box(sd * 0.64, 0.975, -1.3, 0.09, 0.07, 1.72, -0.095, 0, 0); // flying buttress
+        ch.lathe([[0.0, 0.0], [0.06, 0.0], [0.06, -0.15], [0.048, -0.15], [0.048, -0.02], [0.0, -0.02]], 14, 'z', sd * 0.12, 0.3, -2.36);
+      }
+      tail.box(0, 0.8, -2.456, 1.62, 0.075, 0.02);                      // full-width tail strip
+      cf.box(0, 0.69, -2.455, 1.62, 0.12, 0.02);
+      paint.box(0, hBase(-2.3) + 0.04, -2.32, 1.5, 0.04, 0.18, 0.12, 0, 0); // integrated lip
+      for (let k = 0; k < 6; k++) cf.box(0, hBase(-1.35 - k * 0.12) + 0.008, -1.35 - k * 0.12, 0.9, 0.012, 0.05); // engine louvres
+      cf.box(0, 0.24, -2.3, 1.4, 0.02, 0.4);
+    }
+  },
+  { /* 04 a German rear-engine fastback: round lamps on tall front wings, wide hips, a long teardrop roof and a ducktail */
+    id: 'falke', name: 'FALKE 9', jp: 'ファルケ', tagZh: '后置引擎 · 德系快背', tagEn: 'REAR-ENGINE · GERMAN FASTBACK',
+    descZh: '首都高上常见的德系后置跑车：前翼子板上的圆形大灯、宽臀、一路滑到车尾的车顶线和鸭尾扰流。', descEn: 'The German rear-engine coupe you see on the Shutoko: round lamps on the front wings, wide hips, a roofline that runs to the tail and a ducktail.',
+    HC: { AXF: 1.5, AXR: -0.98, AY: 0.34, RT: 0.34 }, hw: { w: 0.84, ff: 0.13, rf: 0.22, nz: 2.0, nk: 0.3, tz: -1.95, tk: 0.3 },
+    base: (z) => (z > 0.85 ? 0.6 - (z - 0.85) * 0.05 : z > -0.9 ? 0.6 + (0.85 - z) * 0.06 : 0.705 + Math.min(1, (-0.9 - z) / 1.5) * 0.06),
+    arch: { af: 0.15, afy: 0, ar: 0.12, ary: 0.04 }, roof: { c0: 0.82, r0: 0.0, top: 1.13, slope: 0.03, r1: -0.35, e: -2.38, fw: 1.6, rp: 1.7 }, gt: 0.44, gw: 0.62, glassEnd: -1.3,
+    track: [0.82, 0.92], rearTyre: 1.3, spokes: 5, tl: [0.5, 0.78, -2.47], hl: [0.62, 0.69, 1.99], ex: [0.1, 0.28, -2.52],
+    detail(b) {
+      const { paint, cf, ch, head, tail, acc } = b;
+      cf.box(0, 0.17, 2.28, 1.5, 0.03, 0.3);
+      cf.box(0, 0.27, 2.41, 1.1, 0.09, 0.04);
+      for (const sd of [1, -1]) {
+        ch.lathe([[0.0, 0.0], [0.125, 0.0], [0.125, -0.06], [0.0, -0.06]], 24, 'z', sd * 0.62, 0.69, 1.96);
+        head.lathe([[0.0, 0.0], [0.105, 0.0], [0.105, -0.02], [0.0, -0.02]], 24, 'z', sd * 0.62, 0.69, 1.985);
+        head.box(sd * 0.55, 0.3, 2.41, 0.16, 0.03, 0.02);
+        cf.box(sd * (hHW(0.2) + 0.008), 0.22, 0.2, 0.05, 0.06, 1.4);
+        acc.box(sd * (hHW(0.2) + 0.036), 0.242, 0.2, 0.006, 0.012, 1.4);
+        tail.box(sd * 0.48, 0.78, -2.41, 0.3, 0.075, 0.04);             // corner lamps
+        ch.lathe([[0.0, 0.0], [0.055, 0.0], [0.055, -0.15], [0.044, -0.15], [0.044, -0.02], [0.0, -0.02]], 14, 'z', sd * 0.1, 0.28, -2.33);
+      }
+      tail.box(0, 0.8, -2.43, 1.22, 0.03, 0.02);                         // light bar across the tail
+      paint.box(0, hRoof(-2.24) + 0.035, -2.27, 1.16, 0.03, 0.24, 0.36, 0, 0); // ducktail
+      for (let k = 0; k < 6; k++) { const z = -1.72 - k * 0.075; cf.box(0, hRoof(z) + 0.008, z, 0.5, 0.012, 0.035); } // engine-lid grille
+      cf.box(0, 0.24, -2.25, 1.0, 0.02, 0.3);
+    }
+  }
+];
+let carIdx = clamp(store.get('sp_car', 0) | 0, 0, CARS.length - 1), CS = CARS[carIdx];
 function hBump(z, c, w) { const t = Math.abs(z - c) / w; return t >= 1 ? 0 : 0.5 + 0.5 * Math.cos(Math.PI * t); }
-function hHW(z) { let w = 0.9 + 0.1 * hBump(z, HC.AXF, 0.9) + 0.17 * hBump(z, HC.AXR, 1.0); if (z > 1.95) w -= (z - 1.95) * 0.34; if (z < -2.0) w -= (-2.0 - z) * 0.28; return w; }
+function hHW(z) { const s = CS.hw; let w = s.w + s.ff * hBump(z, HC.AXF, 0.9) + s.rf * hBump(z, HC.AXR, 1.0); if (z > s.nz) w -= (z - s.nz) * s.nk; if (z < s.tz) w -= (s.tz - z) * s.tk; return w; }
 function hYB(z) { return z > 2.05 ? 0.16 + (z - 2.05) * 0.22 : z < -2.0 ? 0.18 + (-2.0 - z) * 0.32 : 0.16; }
-function hBase(z) { if (z > 0.85) return 0.66 - (z - 0.85) * 0.14; if (z > -1.1) return 0.66 + (0.85 - z) * 0.05; return 0.7575 + Math.min(1, (-1.1 - z) / 0.9) * 0.08; }
+function hBase(z) { return CS.base(z); }
 function hArch(z, ax, R) { const dz = z - ax; return Math.abs(dz) >= R ? 0 : HC.AY + Math.sqrt(R * R - dz * dz) + 0.02; }
-function hYS(z) { return Math.max(hBase(z), hArch(z, HC.AXF, HC.RT + 0.07), hArch(z, HC.AXR, HC.RT + 0.12) + 0.03); }
+function hYS(z) { const a = CS.arch; return Math.max(hBase(z), hArch(z, HC.AXF, HC.RT + a.af) + a.afy, hArch(z, HC.AXR, HC.RT + a.ar) + a.ary); }
 function hWell(z) { const R = HC.RT + 0.06; for (const ax of [HC.AXF, HC.AXR]) { const dz = z - ax; if (Math.abs(dz) < R) return HC.AY + Math.sqrt(R * R - dz * dz); } return 0; }
 function hRoof(z) {
-  if (z > 0.0) { const t = clamp((0.95 - z) / 0.95, 0, 1); return lerp(hYS(0.95) - 0.005, 1.1, 1 - Math.pow(1 - t, 1.9)); }
-  if (z > -0.6) return 1.1 + z * 0.02;
-  const t = clamp((-0.6 - z) / 1.4, 0, 1); return lerp(1.088, hBase(-2.0) + 0.005, Math.pow(t, 1.35));
+  const r = CS.roof;
+  if (z > r.r0) { const t = clamp((r.c0 - z) / (r.c0 - r.r0), 0, 1); return lerp(hYS(r.c0) - 0.005, r.top, 1 - Math.pow(1 - t, r.fw)); }
+  if (z > r.r1) return r.top + (z - r.r0) * r.slope;
+  const t = clamp((r.r1 - z) / (r.r1 - r.e), 0, 1); return lerp(r.top + (r.r1 - r.r0) * r.slope, hBase(r.e) + 0.005, Math.pow(t, r.rp));
 }
 function hRing(z) {
   const hw = hHW(z), yb = hYB(z), ys = hYS(z), yd = hBase(z) + 0.012;
@@ -3440,6 +3613,7 @@ function hRing(z) {
   const y4 = Math.min(w + 0.05, ys - 0.07), y5 = Math.max(ys - 0.06, y4 + 0.01);
   return [[0, yb], [xi, yb], [xi, w], [hw - 0.02, w], [hw, y4], [hw + 0.012, (y4 + y5) / 2], [hw, y5], [hw - 0.09, ys], [hw - 0.3, ys + (yd - ys) * 0.8], [0, yd]];
 }
+const carSpan = (a, b, n) => { const o = []; for (let i = 0; i <= n; i++) o.push(a + ((b - a) * i) / n); return o; };
 function fresnelMat(color) {
   return new THREE.ShaderMaterial({
     uniforms: { color: { value: new THREE.Color(color) }, opacity: { value: 0 }, power: { value: 2.2 } },
@@ -3449,6 +3623,7 @@ function fresnelMat(color) {
   });
 }
 function buildCar() {
+  CS = CARS[carIdx]; Object.assign(HC, CS.HC);
   car = new THREE.Group(); car.rotation.order = 'YXZ';
   carBody = new THREE.Group(); car.add(carBody);
   const L = LIVERIES[liveryIdx];
@@ -3460,36 +3635,17 @@ function buildCar() {
   const tailMat = new THREE.MeshBasicMaterial({ color: 0xff4a28, side: THREE.DoubleSide });
   accentMat = new THREE.MeshBasicMaterial({ color: L.glow, side: THREE.DoubleSide });
   const paint = new MB(), glass = new MB(), cf = new MB(), ch = new MB(), head = new MB(), tail = new MB(), acc = new MB();
-  const ST0 = [2.45, 2.42, 2.36, 2.26, 2.12, 0.85, 0.55, 0.25, -0.05, -0.35, -0.65, -2.0, -2.1, -2.2, -2.3, -2.38, -2.45];
+  /* body: stations closer together where the outline turns (bumpers, wheel arches, the cabin's key points) */
+  const R0 = CS.roof, gE = CS.glassEnd !== undefined ? CS.glassEnd : R0.e;
+  const ST0 = [2.45, 2.42, 2.36, 2.26, 2.12, 1.98, -2.1, -2.2, -2.3, -2.38, -2.45, R0.c0, R0.r0, R0.r1, R0.e, gE].concat(carSpan(1.85, -2.0, 15));
   for (const ax of [HC.AXF, HC.AXR]) for (const dz of [0.48, 0.42, 0.41, 0.36, 0.28, 0.18, 0.09, 0, -0.09, -0.18, -0.28, -0.36, -0.41, -0.42, -0.48]) ST0.push(ax + dz);
-  const ST = Array.from(new Set(ST0.map((z) => Math.round(z * 1000) / 1000))).sort((a, b) => b - a);
+  const ST = Array.from(new Set(ST0.filter((z) => z <= 2.45 && z >= -2.45).map((z) => Math.round(z * 1000) / 1000))).sort((a, b) => b - a);
   paint.loft(ST, hRing);
-  const CS = [0.95, 0.82, 0.68, 0.54, 0.4, 0.26, 0.12, 0, -0.3, -0.6, -0.85, -1.1, -1.35, -1.6, -1.82, -2.0];
-  glass.loft(CS, (z) => { const hb = Math.min(hHW(z) - 0.24, 0.7), yb = hBase(z) - 0.02, yr = hRoof(z); return [[0, yb], [hb, yb], [0.5, yr], [0, yr + 0.03]]; });
-  paint.loft([-0.02, -0.25, -0.5, -0.72], (z) => { const yr = hRoof(z); return [[0, yr - 0.01], [0.47, yr - 0.005], [0.52, yr + 0.012], [0.42, yr + 0.03], [0, yr + 0.04]]; });
-  /* front: splitter, slit headlights, intakes */
-  cf.box(0, 0.17, 2.3, 1.7, 0.03, 0.36);
-  cf.box(0, 0.31, 2.44, 1.0, 0.1, 0.03);
-  for (const sd of [1, -1]) {
-    head.box(sd * 0.56, 0.45, 2.31, 0.42, 0.026, 0.06, 0, sd * 0.36, 0);
-    head.box(sd * 0.5, 0.28, 2.43, 0.22, 0.018, 0.02);
-    cf.box(sd * 0.62, 0.3, 2.36, 0.28, 0.1, 0.04);
-    paint.box(sd * 0.82, 0.88, 0.62, 0.15, 0.07, 0.12); cf.box(sd * 0.74, 0.85, 0.62, 0.1, 0.02, 0.04);
-    cf.box(sd * (hHW(-0.1) + 0.012), 0.22, -0.1, 0.06, 0.06, 1.7);
-    acc.box(sd * (hHW(-0.1) + 0.045), 0.255, -0.1, 0.006, 0.014, 1.7);
-    cf.box(sd * (hHW(-0.75) + 0.004), 0.5, -0.75, 0.012, 0.16, 0.5);
-    /* rear: split light bar, corner slits, spoiler pylons, exhausts */
-    tail.box(sd * 0.46, 0.79, -2.452, 0.78, 0.034, 0.02);
-    tail.box(sd * 0.84, 0.74, -2.43, 0.03, 0.13, 0.06);
-    cf.box(sd * 0.48, 0.93, -2.16, 0.02, 0.18, 0.12, -0.25, 0, 0);
-    acc.box(sd * 0.48, 1.005, -2.16, 0.022, 0.01, 0.2);
-    ch.lathe([[0.0, 0.0], [0.07, 0.0], [0.07, -0.17], [0.056, -0.17], [0.056, -0.02], [0.0, -0.02]], 14, 'z', sd * 0.16, 0.34, -2.33);
-  }
-  cf.box(0, 0.56, -2.455, 1.5, 0.36, 0.02);
-  for (let k = -2; k <= 2; k++) cf.box(k * 0.22, 0.25, -2.25, 0.02, 0.18, 0.46);
-  cf.box(0, 0.17, -2.25, 1.5, 0.02, 0.46);
-  const AF = [[0.14, 0], [0.1, -0.018], [0.0, -0.026], [-0.12, -0.012], [-0.15, 0.004], [-0.06, 0.01], [0.08, 0.008]];
-  cf.prismX(AF.map(([z, y]) => [z * Math.cos(0.08) - y * Math.sin(0.08), z * Math.sin(0.08) + y * Math.cos(0.08)]), -0.86, 0.86, 1.02, -2.2);
+  const cabin = (z) => { const hb = Math.min(hHW(z) - 0.24, CS.gw), yb = hBase(z) - 0.02, yr = hRoof(z); return [[0, yb], [hb, yb], [CS.gt, yr], [0, yr + 0.03]]; };
+  glass.loft(carSpan(R0.c0, gE, Math.max(6, Math.round((R0.c0 - gE) / 0.13))), cabin);
+  if (gE > R0.e + 0.05) paint.loft(carSpan(gE + 0.02, R0.e, Math.max(4, Math.round((gE - R0.e) / 0.12))), cabin);   // a painted engine lid under the fastback
+  paint.loft(carSpan(R0.r0 - 0.02, R0.r1 - 0.12, 4), (z) => { const yr = hRoof(z), g = CS.gt; return [[0, yr - 0.01], [g - 0.03, yr - 0.005], [g + 0.02, yr + 0.012], [g - 0.08, yr + 0.03], [0, yr + 0.04]]; });
+  CS.detail({ paint, glass, cf, ch, head, tail, acc });
   const addM = (B, m, grp) => { if (!B.empty()) { const g = B.build(); const me = new THREE.Mesh(g, m); (grp || carBody).add(me); return me; } return null; };
   const pm = addM(paint, bodyMat); ghostGeo = pm.geometry;
   addM(glass, M.glass); addM(cf, carbon); addM(ch, chrome); addM(head, headMat); addM(tail, tailMat); addM(acc, accentMat);
@@ -3518,7 +3674,8 @@ function buildCar() {
   const rim = new MB();
   rim.lathe([[0.25, -0.12], [0.25, 0.1], [0.262, 0.105], [0.262, 0.13], [0.25, 0.13]], 28, 'x', 0, 0, 0);
   rim.lathe([[0.0, 0.12], [0.07, 0.12], [0.07, 0.09], [0.045, 0.08]], 12, 'x', 0, 0, 0);
-  for (let k = 0; k < 7; k++) { const a = k / 7 * Math.PI * 2; rim.box(0.1, Math.cos(a) * 0.16, Math.sin(a) * 0.16, 0.03, 0.2, 0.05, a, 0, 0.25); }
+  const NSP = CS.spokes, thin = NSP >= 10 ? 0.55 : NSP <= 5 ? 1.5 : 1;
+  for (let k = 0; k < NSP; k++) { const a = k / NSP * Math.PI * 2; rim.box(0.1, Math.cos(a) * 0.16, Math.sin(a) * 0.16, 0.03, 0.2, 0.05 * thin, a, 0, 0.25); if (NSP === 6) rim.box(0.1, Math.cos(a + 0.16) * 0.16, Math.sin(a + 0.16) * 0.16, 0.03, 0.2, 0.03, a + 0.16, 0, 0.25); }
   const disc = new MB(); disc.lathe([[0.08, 0.04], [0.215, 0.04], [0.215, 0.015], [0.08, 0.015]], 20, 'x', 0, 0, 0);
   const cal = new MB(); cal.box(0.045, 0.1, -0.16, 0.07, 0.2, 0.11, 0.55, 0, 0);
   const tyreG = tyre.build(), rimG = rim.build(), discG = disc.build(), calG = cal.build();
@@ -3527,16 +3684,17 @@ function buildCar() {
   calMat = new THREE.MeshBasicMaterial({ color: L.glow, side: THREE.DoubleSide });
   const discMat = new THREE.MeshStandardMaterial({ color: 0x5a5c66, roughness: 0.4, metalness: 0.8, side: THREE.DoubleSide });
   wheels.length = 0;
-  for (const [x, z, front] of [[0.83, HC.AXF, true], [-0.83, HC.AXF, true], [0.89, HC.AXR, false], [-0.89, HC.AXR, false]]) {
+  const TF = CS.track[0], TRk = CS.track[1];
+  for (const [x, z, front] of [[TF, HC.AXF, true], [-TF, HC.AXF, true], [TRk, HC.AXR, false], [-TRk, HC.AXR, false]]) {
     const wg = new THREE.Group(); wg.position.set(x, HC.AY, z);
     const sideG = new THREE.Group(); if (x < 0) sideG.scale.x = -1; wg.add(sideG);
     const spin = new THREE.Group(); sideG.add(spin);
-    const ty = new THREE.Mesh(tyreG, tyreMat); if (!front) ty.scale.set(1.15, 1, 1);
+    const ty = new THREE.Mesh(tyreG, tyreMat); if (!front) ty.scale.set(CS.rearTyre, 1, 1);
     spin.add(ty, new THREE.Mesh(rimG, rimMat), new THREE.Mesh(discG, discMat));
     sideG.add(new THREE.Mesh(calG, calMat));
     car.add(wg); wheels.push({ wg, spin, front });
   }
-  car.add(new THREE.Points(pointsGeo([0.5, 0.45, 2.42, -0.5, 0.45, 2.42], null), new THREE.PointsMaterial({ size: 1.3, map: TX.glow, color: 0xdfeeff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })));
+  car.add(new THREE.Points(pointsGeo([CS.hl[0], CS.hl[1], CS.hl[2], -CS.hl[0], CS.hl[1], CS.hl[2]], null), new THREE.PointsMaterial({ size: 1.3, map: TX.glow, color: 0xdfeeff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })));
   glowMat = new THREE.MeshBasicMaterial({ map: TX.pool, color: L.glow, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
   const ug = new THREE.PlaneGeometry(3.0, 5.6); ug.rotateX(-Math.PI / 2);
   const under = new THREE.Mesh(ug, glowMat); under.position.y = 0.05; car.add(under);
@@ -3544,8 +3702,8 @@ function buildCar() {
   const tr = new THREE.Mesh(M.reflGeo, new THREE.MeshBasicMaterial({ map: TX.refl, color: 0xff4a28, opacity: 0.32, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
   tr.scale.set(2.0, 1, 4.5); tr.position.set(0, 0.045, -2.45 - 2.25 + 0.4); car.add(tr);
   const fm = new THREE.SpriteMaterial({ map: TX.glow, color: 0x6fd8ff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 });
-  flameL = new THREE.Sprite(fm); flameL.position.set(0.16, 0.34, -2.62);
-  flameR = new THREE.Sprite(fm); flameR.position.set(-0.16, 0.34, -2.62);
+  flameL = new THREE.Sprite(fm); flameL.position.set(CS.ex[0], CS.ex[1], CS.ex[2]);
+  flameR = new THREE.Sprite(fm); flameR.position.set(-CS.ex[0], CS.ex[1], CS.ex[2]);
   car.add(flameL, flameR);
   /* airflow ribbons that hug the flanks under nitro */
   const N = 26, pos = [], uv = [], col = [], idx = [];
@@ -3561,7 +3719,7 @@ function buildCar() {
   {
     const rp = [], ru = [], rc = [], ri = [], NR = 24;
     for (let i = 0; i <= NR; i++) {
-      const u = i / NR, z = lerp(1.0, -6.5, u), y = (z > -2.0 ? hRoof(Math.max(z, -2.0)) : hRoof(-2.0) + (-2.0 - z) * 0.12) + 0.09, hw = 0.55 + 0.35 * smooth(clamp((-z - 0.5) / 5, 0, 1));
+      const ze = CS.roof.e, u = i / NR, z = lerp(1.0, -6.5, u), y = (z > ze ? hRoof(Math.max(z, ze)) : hRoof(ze) + (ze - z) * 0.12) + 0.09, hw = 0.55 + 0.35 * smooth(clamp((-z - 0.5) / 5, 0, 1));
       const f = Math.sin(Math.PI * Math.min(1, u * 1.1)) * (u < 0.12 ? u / 0.12 : 1);
       rp.push(-hw, y, z, hw, y, z); ru.push(u * 2.0, 0, u * 2.0, 1); rc.push(f, f, f, f, f, f);
       if (i < NR) { const a = i * 2; ri.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
@@ -3596,7 +3754,7 @@ const cam = { yaw: 0, d: LANES[1] };
 const chunks = new Map();
 const stI = mkInfo();
 const RUN = { track: 0, diff: 0, chart: [], ci: 0, act: [], t: -1, clock: 'perf', perf0: 0, pauseAt: 0, len: 120, ended: false, lastBeat: -1, endT: 0, count: 0 };
-const FX = { tun: 0, sw: 0, sw0: 0, swT: -1, mc: 1, pr: 0, nk: 0, hk: 0, beat: 0, flash: 0, ghosts: [], streaks: [], waves: [] };
+const FX = { tun: 0, sw: 0, sw0: 0, swT: -1, mc: 1, gc: 0, pr: 0, nk: 0, hk: 0, beat: 0, flash: 0, ghosts: [], streaks: [], waves: [] };
 
 /* ---------- tracks ----------
    FM1: the four Suno songs, analysed offline (songs/analyze.py): a half-beat grid that follows the small tempo drift of the
@@ -4468,8 +4626,8 @@ function driftVisuals(dt) {
     }
   }
   const fx = Math.sin(car.rotation.y), fz = Math.cos(car.rotation.y), nx = Math.cos(car.rotation.y), nz = -Math.sin(car.rotation.y);
-  [0.98, -0.98].forEach((lx, i) => {
-    const wx = car.position.x + nx * lx - fx * 1.38, wz = car.position.z + nz * lx - fz * 1.38;
+  [1, -1].forEach((sd, i) => {
+    const lx = sd * (CS.track[1] + 0.09), wx = car.position.x + nx * lx + fx * HC.AXR, wz = car.position.z + nz * lx + fz * HC.AXR;
     if (on) {
       const pv = DR.skid[i]; if (pv && Math.hypot(wx - pv[0], wz - pv[1]) > 0.8) addSkid(pv[0], pv[1], wx, wz, car.position.y);
       if (!pv || Math.hypot(wx - pv[0], wz - pv[1]) > 0.8) DR.skid[i] = [wx, wz];
@@ -4523,7 +4681,7 @@ function updateDriftTrail(dt) {
     for (let w = 0; w < 2; w++) {
       const H = DP.H[w];
       for (const q of H) q.a += dt;
-      if (on) { _dq.set(w ? -0.92 : 0.92, 0.05, -1.38); car.localToWorld(_dq); H.unshift({ x: _dq.x, y: _dq.y, z: _dq.z, a: 0, k: DP.k }); }
+      if (on) { _dq.set((w ? -1 : 1) * (CS.track[1] + 0.03), 0.05, HC.AXR); car.localToWorld(_dq); H.unshift({ x: _dq.x, y: _dq.y, z: _dq.z, a: 0, k: DP.k }); }
       while (H.length > 90 || (H.length && H[H.length - 1].a > DP.life)) H.pop();
     }
     if (++DP.tick % 2 === 0) DP.seed = (DP.seed + 1) % 9973;
@@ -4777,8 +4935,8 @@ function updateTrails(dt) {
   car.updateMatrixWorld();
   const N = TR.N, pos = TR.mesh.geometry.getAttribute('position'), col = TR.mesh.geometry.getAttribute('color');
   const life = 0.34, bright = 1 + FX.nk * 0.6;
-  [0.5, -0.5].forEach((lx, k) => {
-    const H = TR.pts[k]; _tv.set(lx, 0.79, -2.47); car.localToWorld(_tv);
+  [1, -1].forEach((sd, k) => {
+    const H = TR.pts[k]; _tv.set(sd * CS.tl[0], CS.tl[1], CS.tl[2]); car.localToWorld(_tv);
     H.unshift({ x: _tv.x, y: _tv.y, z: _tv.z, a: 0 });
     for (const q of H) q.a += dt;
     while (H.length > N || (H.length && H[H.length - 1].a > life)) H.pop();
@@ -4958,9 +5116,22 @@ function visuals(dt) {
   camera.position.set(_w.x + shx + P.bump * 0.12 * Math.sin(time * 60), _pp.y + camH + mc * (port ? 0.6 : 0) + shy + hum, _w.z);
   const la = 18 - mc * 12;
   worldAt(P.s + la, cam.d * (0.7 + mc * 0.3) + dk * 1.6, _w); pointAt(P.s + la, _pp);
-  camera.lookAt(_w.x, _pp.y + 0.75 - mc * (port ? 3.0 : 0.6), _w.z);
-  if (!reduceMotion) camera.rotateZ(-(P.d - cam.d) * 0.03 + DR.roll);
-  if (Math.abs(camera.fov - fov) > 0.05) { camera.fov = fov; camera.updateProjectionMatrix(); }
+  let ltx = _w.x, lty = _pp.y + 0.75 - mc * (port ? 3.0 : 0.6), ltz = _w.z, fovF = fov;
+  /* garage: the camera leaves the chase position and orbits the car as it cruises; the aim point sits off the car so it
+     stays clear of the panel (above it on a phone, left of it in landscape) */
+  FX.gc += ((state === 'garage' ? 1 : 0) - FX.gc) * (1 - Math.exp(-dt * 2.6));
+  if (state === 'garage' && !GAR.drag) GAR.ang += dt * 0.22;
+  if (FX.gc > 0.002) {
+    const g = smooth(clamp(FX.gc, 0, 1)), ry = car.rotation.y, a = GAR.ang, R = port ? 8.6 : 7.4;
+    const cx = car.position.x, cy = car.position.y + 0.55, cz = car.position.z;
+    const ox = cx + Math.sin(ry + a) * R, oy = cy + (port ? 2.0 : 1.3), oz = cz + Math.cos(ry + a) * R;
+    const vx = cx - ox, vz = cz - oz, vl = Math.hypot(vx, vz) || 1, rx = -vz / vl, rz = vx / vl, offR = port ? 0 : 2.1, offY = port ? -1.7 : -0.35;
+    camera.position.set(lerp(camera.position.x, ox, g), lerp(camera.position.y, oy, g), lerp(camera.position.z, oz, g));
+    ltx = lerp(ltx, cx + rx * offR, g); lty = lerp(lty, cy + offY, g); ltz = lerp(ltz, cz + rz * offR, g); fovF = lerp(fov, port ? 56 : 42, g);
+  }
+  camera.lookAt(ltx, lty, ltz);
+  if (!reduceMotion) camera.rotateZ((-(P.d - cam.d) * 0.03 + DR.roll) * (1 - FX.gc));
+  if (Math.abs(camera.fov - fovF) > 0.05) { camera.fov = fovF; camera.updateProjectionMatrix(); }
   cam.yaw = P.trackH;
   _v.set(P.x + Math.sin(P.trackH) * 400, P.y + 1, P.z + Math.cos(P.trackH) * 400).project(camera);
   FXS.center[0] = clamp(_v.x * 0.5 + 0.5, 0.15, 0.85); FXS.center[1] = clamp(_v.y * 0.5 + 0.5, 0.25, 0.85);
@@ -4968,10 +5139,10 @@ function visuals(dt) {
   FXS.horizon = clamp(_v.y * 0.5 + 0.5, 0.2, 0.9); FXS.wet = lerp(1.4, 0.9, FX.tun);
   FXS.boost = Math.max(FX.nk * 0.7, FX.hk);
   const kmhNow = P.v * 3.6;
-  FXS.blur = reduceMotion || !GFX.blur ? 0 : clamp((kmhNow - 230) / 260, 0, 1) * 0.12 + 0.06 * FX.nk + 0.07 * FX.hk;
+  FXS.blur = reduceMotion || !GFX.blur ? 0 : (clamp((kmhNow - 230) / 260, 0, 1) * 0.12 + 0.06 * FX.nk + 0.07 * FX.hk) * (1 - FX.gc);   // the garage keeps the car sharp
   const camVd = (cam.d - (FX.pcd === undefined ? cam.d : FX.pcd)) / Math.max(dt, 1e-3); FX.pcd = cam.d;
-  FXS.lat = reduceMotion || !GFX.blur || dt <= 0 ? 0 : clamp(camVd * 0.0011, -0.025, 0.025);
-  FXS.aberr = reduceMotion || !GFX.blur ? 0 : 0.0015 + 0.003 * FX.nk + 0.004 * FX.hk;
+  FXS.lat = reduceMotion || !GFX.blur || dt <= 0 ? 0 : clamp(camVd * 0.0011, -0.025, 0.025) * (1 - FX.gc);
+  FXS.aberr = reduceMotion || !GFX.blur ? 0 : (0.0015 + 0.003 * FX.nk + 0.004 * FX.hk) * (1 - 0.8 * FX.gc);
   FXS.bloom = 1.15 + 0.25 * FX.hk + 0.12 * FX.beat;
   /* world */
   sky.position.copy(camera.position); if (FX.neb) FX.neb.position.copy(camera.position);
@@ -4986,7 +5157,7 @@ function visuals(dt) {
   else if (TP.on && TP.cur) { btr = TP.cur.tr; bt = TP.time(); }
   else if (MUS.on && MUS.songStart != null) { btr = TRACKS.find((x) => x.kind === 'synth' && x.si === MUS.idx); bt = MUS.ctx.currentTime - MUS.songStart - outLat(); }
   const bi = btr ? (slotAt(btr, bt) >> 1) : Math.floor(time * 2);
-  if (bi !== RUN.lastBeat && bi >= 0) { RUN.lastBeat = bi; FX.beat = 1; if (menuish() && (bi - (btr ? btr.phase : 0)) % 4 === 0) autoLane(); }
+  if (bi !== RUN.lastBeat && bi >= 0) { RUN.lastBeat = bi; FX.beat = 1; if (menuish() && state !== 'garage' && (bi - (btr ? btr.phase : 0)) % 4 === 0) autoLane(); }
   FX.beat = Math.max(0, FX.beat - dt * 5);
   const bp = 0.85 + 0.45 * FX.beat + 0.3 * FX.hk;
   M.strip.color.setScalar(bp); M.chev.color.setScalar(0.9 + 0.5 * FX.beat); M.edge.color.setScalar(0.6 + 0.15 * FX.beat);
@@ -5066,8 +5237,8 @@ function updateHud() {
 }
 
 /* ---------- flow: title → radio (track + difficulty) → run → result ---------- */
-function showScreen(id) { ['menu', 'stereo', 'result', 'paused', 'settings'].forEach((s) => { $(s).hidden = s !== id; }); }
-const menuish = () => state === 'menu' || state === 'select';
+function showScreen(id) { ['menu', 'stereo', 'result', 'paused', 'settings', 'garage'].forEach((s) => { $(s).hidden = s !== id; }); }
+const menuish = () => state === 'menu' || state === 'select' || state === 'garage';
 function startRun() {
   A.init();
   if (CD.noDisc || CD.busy) return;
@@ -5121,6 +5292,47 @@ function goSelect() {
   A.init(); radio(); vfdRender();
   last = performance.now();
 }
+/* ---------- garage: pick the car (and its paint) after the song, before the run ---------- */
+const GAR = { ang: 2.45, drag: null };
+function goGarage() {
+  if (CD.noDisc || CD.busy) return;
+  A.init(); state = 'garage'; showScreen('garage'); GAR.ang = 2.45;
+  if (P.lane !== 1) { P.fromD = P.d; P.toD = LANES[1]; P.lt = 0; P.lane = 1; }
+  garRender(); radio();
+}
+function setCar(i) {
+  const n = (i + CARS.length) % CARS.length; if (n === carIdx && car) { garRender(); return; }
+  carIdx = n; store.set('sp_car', carIdx);
+  if (car) {
+    scene.remove(car);
+    car.traverse((o) => { if (o.geometry && o.geometry !== M.reflGeo) o.geometry.dispose(); if (o.material && o.material !== M.glass) o.material.dispose(); });
+  }
+  wheels.length = 0; flows.length = 0; pRings.length = 0;
+  buildCar(); applyLivery(); keepAlphaAll(car);
+  for (const g of ghostPool) g.m.geometry = ghostGeo;
+  if (A.click) A.click();
+  garRender();
+}
+function garRender() {
+  if (!$('garage')) return;
+  const c = CARS[carIdx], en = lang === 'en';
+  $('carNo').textContent = String(carIdx + 1).padStart(2, '0') + ' / ' + String(CARS.length).padStart(2, '0');
+  $('carName').textContent = c.name; $('carJp').textContent = c.jp;
+  $('carTag').textContent = en ? c.tagEn : c.tagZh; $('carDesc').textContent = en ? c.descEn : c.descZh;
+  const dots = $('carDots'); if (dots.children.length !== CARS.length) { dots.innerHTML = ''; CARS.forEach((_, k) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', CARS[k].name); b.addEventListener('click', () => setCar(k)); dots.appendChild(b); }); }
+  Array.from(dots.children).forEach((b, k) => b.setAttribute('aria-current', String(k === carIdx)));
+}
+function buildGarage() {
+  if (!$('garage')) return;
+  $('carPrev').addEventListener('click', () => setCar(carIdx - 1)); $('carNext').addEventListener('click', () => setCar(carIdx + 1));
+  $('garBack').addEventListener('click', () => goSelect()); $('garGo').addEventListener('click', () => startRun());
+  /* drag anywhere outside the panel to orbit; it carries on turning by itself after a moment */
+  window.addEventListener('pointerdown', (e) => { if (state !== 'garage' || isUi(e)) return; GAR.drag = { x: e.clientX, a: GAR.ang, id: e.pointerId }; });
+  window.addEventListener('pointermove', (e) => { if (GAR.drag && GAR.drag.id === e.pointerId) GAR.ang = GAR.drag.a - (e.clientX - GAR.drag.x) * 0.009; });
+  const up = (e) => { if (GAR.drag && GAR.drag.id === e.pointerId) GAR.drag = null; };
+  window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  garRender();
+}
 function goTitle() {
   clearRows(); state = 'menu'; $('hud').hidden = true; showScreen('menu'); RADIO.pendingStart = false;
   radio(); last = performance.now();
@@ -5152,7 +5364,7 @@ function radio() {
   TP.load(tr).then(() => {
     if (RADIO.cur !== tr.id) return;
     staticBed(false);
-    if (RADIO.pendingStart && state === 'select') { startRun(); return; }
+    if (RADIO.pendingStart && (state === 'select' || state === 'garage')) { startRun(); return; }
     if (menuish()) TP.play(tr, tr.hook, 0.05, 1.0, true);
     vfdRender();
   }).catch(() => { if (RADIO.cur === tr.id) { RADIO.cur = null; staticBed(false); } RADIO.pendingStart = false; vfdRender(); });
@@ -5196,12 +5408,19 @@ window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
   const k = e.code;
   if (SET.open) { if (CAL.on && (k === 'Space' || k === 'Enter')) { calTap(e); e.preventDefault(); } else if (k === 'Escape') { openSettings(false); e.preventDefault(); } return; }
+  if (state === 'garage') {
+    if (k === 'ArrowLeft' || k === 'KeyA') { setCar(carIdx - 1); e.preventDefault(); }
+    else if (k === 'ArrowRight' || k === 'KeyD') { setCar(carIdx + 1); e.preventDefault(); }
+    else if (k === 'Enter') { startRun(); e.preventDefault(); }
+    else if (k === 'Escape' || k === 'Backspace') { goSelect(); e.preventDefault(); }
+    return;
+  }
   if (state === 'select') {
     if (k === 'ArrowLeft' || k === 'KeyA') { seekBy(-1); e.preventDefault(); }
     else if (k === 'ArrowRight' || k === 'KeyD') { seekBy(1); e.preventDefault(); }
     else if (k === 'ArrowUp' || k === 'KeyW') { setDiff(Math.max(0, selDiff - 1)); e.preventDefault(); }
     else if (k === 'ArrowDown' || k === 'KeyS') { setDiff(Math.min(2, selDiff + 1)); e.preventDefault(); }
-    else if (k === 'Enter') { startRun(); e.preventDefault(); }
+    else if (k === 'Enter') { goGarage(); e.preventDefault(); }
     else if (k === 'KeyN') toggleOpt('nofail');
     else if (k === 'KeyG') toggleOpt('guide');
     else if (k === 'Escape' || k === 'Backspace') { goTitle(); e.preventDefault(); }
@@ -5300,7 +5519,7 @@ function applyLang() {
   }
   const h = $('howto'); if (h) h.innerHTML = say('howto');
   const lb = $('langBtn'); if (lb) lb.textContent = say('lang');
-  buildChips(); meterRenders.forEach((f) => f()); vfdRender();
+  buildChips(); meterRenders.forEach((f) => f()); vfdRender(); garRender();
 }
 
 /* ---------- the head unit ---------- */
@@ -5399,7 +5618,7 @@ function buildStereo() {
   for (let d = 0; d < 3; d++) $('dif' + d).addEventListener('click', () => setDiff(d));
   $('optNF').addEventListener('click', () => toggleOpt('nofail'));
   $('optGuide').addEventListener('click', () => toggleOpt('guide'));
-  $('goBtn').addEventListener('click', () => startRun()); $('huBack').addEventListener('click', () => goTitle());
+  $('goBtn').addEventListener('click', () => goGarage()); $('huBack').addEventListener('click', () => goTitle());
   const k = $('knob'); let drag = null;
   const setV = (v) => { v = clamp(Math.round(v), 0, 10); if (v !== MUS.vol) { MUS.setVol(v); knobRender(); meterRenders.forEach((f) => f()); volMsg(); } };
   k.addEventListener('pointerdown', (e) => { A.init(); drag = { x: e.clientX, y: e.clientY, v: MUS.vol }; if (k.setPointerCapture) k.setPointerCapture(e.pointerId); e.preventDefault(); });
@@ -6179,6 +6398,7 @@ async function start() {
   manageWorld(true);
   buildStereo();
   buildSettings();
+  buildGarage();
   cdInit();
   A.onInit = () => { TP.nodes(); radio(); };
   { const tr = TRACKS[selTrack]; if (tr.kind === 'mp3') TP.fetchRaw(tr).catch(() => {}); }   // start downloading the last station before the first tap
@@ -6198,7 +6418,7 @@ async function start() {
       advance(sec) { const n = Math.round(sec * 60); for (let i = 0; i < n; i++) { step(1 / 120); step(1 / 120); manageWorld(false); visuals(1 / 60); if (state === 'run') updateHud(); } },
       perfClock() { RUN.clock = 'perf'; RUN.perf0 = performance.now() - Math.max(0, RUN.t) * 1000; },
       manualClock() { RUN.clock = 'manual'; }, where: () => ({ kind: stI.inst.kind, area: stI.inst.area, jp: stI.inst.jp, mode: stI.mode }), swellProbe: () => ({ sw: +FX.sw.toFixed(3), bld: +M.bld[0].color.r.toFixed(3), sun: SKY.sun ? +SKY.sun.material.uniforms.swell.value.toFixed(3) : null }), carsDbg: () => RUN.act.slice(0, 40).map((c) => { const v = c.m.position.clone().project(camera); return c.lane + '@' + (c.tc - RUN.t).toFixed(2) + ' d' + c.m.position.distanceTo(camera.position).toFixed(0) + ' scr' + v.x.toFixed(2) + ',' + v.y.toFixed(2) + ',' + v.z.toFixed(3) + ' tid' + c.tid; }), ti: () => TI.map((q) => q.n + ':' + q.meshes[0].count + ':' + q.meshes[0].visible).join(' '), DR, tryDrift, releaseDrift, gates: () => { const m = new THREE.Matrix4(), v = new THREE.Vector3(), out = []; for (let i = 0; i < gateMesh.count; i++) { gateMesh.getMatrixAt(i, m); v.setFromMatrixPosition(m); const d = v.distanceTo(camera.position); v.project(camera); const c = new THREE.Color(); gateMesh.getColorAt(i, c); out.push(d.toFixed(0) + 'm scr' + v.x.toFixed(2) + ',' + v.y.toFixed(2) + ',' + v.z.toFixed(3) + ' col' + c.r.toFixed(2)); } return { n: GATES.length, count: gateMesh.count, vis: gateMesh.visible, inScene: !!gateMesh.parent, out }; },
-      sim(sec, bot) { const n = Math.round(sec * 120); for (let i = 0; i < n && state === 'run'; i++) { if (bot) bot(); step(1 / 120); if (i % 2) { manageWorld(false); visuals(1 / 60); } } }, chart: () => RUN.chart, FX, info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries, tex: renderer.info.memory.textures }), buildChart, FORM, intensityAt, slotAt, vfdRender, RADIO, LOCKDBG, CD, CDB, BEATAN, cdImport, cdRetempo, cdEject, cdBand, seekBy, autoDrifts, get post() { return post; }, FXS, GFX, CAL, AOFF, A, calTap, PERF, gfxPreset
+      sim(sec, bot) { const n = Math.round(sec * 120); for (let i = 0; i < n && state === 'run'; i++) { if (bot) bot(); step(1 / 120); if (i % 2) { manageWorld(false); visuals(1 / 60); } } }, chart: () => RUN.chart, FX, info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries, tex: renderer.info.memory.textures }), buildChart, FORM, intensityAt, slotAt, vfdRender, RADIO, LOCKDBG, CD, CDB, BEATAN, cdImport, cdRetempo, cdEject, cdBand, seekBy, autoDrifts, get post() { return post; }, FXS, GFX, setCar, goGarage, CARS, GAR, get carIdx() { return carIdx; }, camera, CAL, AOFF, A, calTap, PERF, gfxPreset
     };
   }
   last = performance.now();
