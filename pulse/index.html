@@ -345,6 +345,7 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 .tgl[aria-checked="true"] i{background:rgba(63,240,255,.35)}
 .tgl[aria-checked="true"] i::after{transform:translateX(11px);background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
 .tgl:disabled{opacity:.35}
+.tgl-grid .tgl:last-child:nth-child(odd){grid-column:1/-1}
 .perf{display:flex;flex-direction:column;gap:7px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(4,3,14,.5)}
 .perf-top{display:flex;align-items:baseline;gap:6px;font:700 11px var(--f-hud);letter-spacing:.14em;color:var(--muted)}
 .perf-top b{font:italic 700 26px/1 var(--f-hud);color:#fff;letter-spacing:.02em}
@@ -482,6 +483,7 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
           <button class="tgl" id="g_post" type="button" role="switch"><i></i><span data-i18n="gPost">泛光与路面反光</span></button>
           <button class="tgl" id="g_msaa" type="button" role="switch"><i></i><span data-i18n="gMsaa">抗锯齿</span></button>
           <button class="tgl" id="g_blur" type="button" role="switch"><i></i><span data-i18n="gBlur">速度模糊</span></button>
+          <button class="tgl" id="g_smear" type="button" role="switch"><i></i><span data-i18n="gSmear">换道拉丝残影</span></button>
           <button class="tgl" id="g_rain" type="button" role="switch"><i></i><span data-i18n="gRain">雨滴</span></button>
           <button class="tgl" id="g_cones" type="button" role="switch"><i></i><span data-i18n="gCones">路灯光束</span></button>
           <button class="tgl" id="g_lines" type="button" role="switch"><i></i><span data-i18n="gLines">速度线</span></button>
@@ -577,7 +579,7 @@ const I18N = {
     delayNote: '声音比画面晚就往 + 调（每下 5 ms）；蓝牙耳机通常 +150 ~ +250 ms。也可以点「校准」：先听 4 下，再跟着嗒声点 8 下，自动测出延迟。',
     calTap: '跟着嗒声点这里（或空格）', calLead: '先听 4 下…', calDone: '已设为', calN: ' 下', calFew: '点得太少，再试一次',
     setGfx: '画质', pAuto: '自动', pHigh: '高', pMid: '中', pLow: '低', pCustomNote: '当前：自定义（改过单项）', resL: '分辨率',
-    gPost: '泛光与路面反光', gMsaa: '抗锯齿', gBlur: '速度模糊', gRain: '雨滴', gCones: '路灯光束', gLines: '速度线', gShake: '镜头晃动', gFps: '游戏中显示帧率',
+    gPost: '泛光与路面反光', gMsaa: '抗锯齿', gBlur: '速度模糊', gSmear: '换道拉丝残影', gRain: '雨滴', gCones: '路灯光束', gLines: '速度线', gShake: '镜头晃动', gFps: '游戏中显示帧率',
     setPerf: '性能', pfOk: '流畅', pfMid: '一般', pfBad: '吃力', pfWorst: '最慢帧',
     pfNote: '在这一页实时测量（白线 = 60 FPS 的 16.7 ms）。自动画质会在持续掉帧时降低分辨率；泛光与抗锯齿最吃显卡。',
     setStore: '导入歌曲缓存', discUnit: '张', noDiscs: '还没有导入的歌', clearAll: '清空碟片', clearQ: '再按一次确认',
@@ -599,7 +601,7 @@ const I18N = {
     delayNote: 'If the sound arrives later than the picture, go + (5 ms a step); Bluetooth headphones are usually +150 to +250 ms. Or CALIBRATE: listen to 4 clicks, tap along to the next 8, and the delay is measured.',
     calTap: 'TAP ON EACH CLICK (OR SPACE)', calLead: 'LISTEN FOR 4…', calDone: 'SET TO', calN: ' taps', calFew: 'TOO FEW TAPS, TRY AGAIN',
     setGfx: 'GRAPHICS', pAuto: 'AUTO', pHigh: 'HIGH', pMid: 'MEDIUM', pLow: 'LOW', pCustomNote: 'Now: custom (a single setting was changed)', resL: 'RESOLUTION',
-    gPost: 'BLOOM & WET ROAD', gMsaa: 'ANTI-ALIASING', gBlur: 'SPEED BLUR', gRain: 'RAIN', gCones: 'LAMP BEAMS', gLines: 'SPEED LINES', gShake: 'CAMERA SHAKE', gFps: 'FPS IN GAME',
+    gPost: 'BLOOM & WET ROAD', gMsaa: 'ANTI-ALIASING', gBlur: 'SPEED BLUR', gSmear: 'LANE-CHANGE SMEAR', gRain: 'RAIN', gCones: 'LAMP BEAMS', gLines: 'SPEED LINES', gShake: 'CAMERA SHAKE', gFps: 'FPS IN GAME',
     setPerf: 'PERFORMANCE', pfOk: 'SMOOTH', pfMid: 'OK', pfBad: 'STRUGGLING', pfWorst: 'worst',
     pfNote: 'Measured live on this page (white line = 16.7 ms, 60 FPS). AUTO lowers the resolution when frames keep dropping; bloom and anti-aliasing cost the GPU most.',
     setStore: 'IMPORTED SONGS', discUnit: 'discs', noDiscs: 'No discs yet', clearAll: 'CLEAR DISCS', clearQ: 'PRESS AGAIN',
@@ -1372,7 +1374,7 @@ function buildMaterials() {
 }
 
 /* ---------- post-processing: bloom, speed blur, grading ---------- */
-const FXS = { boost: 0, center: [0.5, 0.56], horizon: 0.56, wet: 0.8, blur: 0, aberr: 0, bloom: 1, sun: [0.5, 0.6], rays: 0 };
+const FXS = { sm: 0, smA: [0, 0], smB: [0, 0], smS: [0.1, 0.1], smCol: [0.25, 0.94, 1], boost: 0, center: [0.5, 0.56], horizon: 0.56, wet: 0.8, blur: 0, aberr: 0, bloom: 1, sun: [0.5, 0.6], rays: 0 };
 function makePost() {
   const isGL2 = !!(renderer.capabilities && renderer.capabilities.isWebGL2);
   const opt = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, stencilBuffer: false };
@@ -1412,8 +1414,8 @@ function makePost() {
       for (int i = 0; i < 30; i++) { uv -= d; acc += texture2D(tDiffuse, uv).rgb * decay; decay *= 0.935; }
       gl_FragColor = vec4(acc * weight / 14.0, 1.0);
     }`);
-  const compM = sm({ tScene: { value: null }, tB1: { value: null }, tB2: { value: null }, tB3: { value: null }, tRay: { value: null }, rays: { value: 0 }, lat: { value: 0 }, bloom: { value: 0.95 }, blur: { value: 0 }, aberr: { value: 0 }, vig: { value: 0.55 }, time: { value: 0 }, grain: { value: 0.03 }, aspect: { value: 1 }, wet: { value: 0.8 }, horizon: { value: 0.56 }, center: { value: new THREE.Vector2(0.5, 0.56) } }, `
-    uniform sampler2D tScene, tB1, tB2, tB3, tRay; uniform float bloom, blur, aberr, vig, time, grain, aspect, wet, horizon, rays, lat; uniform vec2 center; varying vec2 vUv;
+  const compM = sm({ tScene: { value: null }, tB1: { value: null }, tB2: { value: null }, tB3: { value: null }, tRay: { value: null }, rays: { value: 0 }, lat: { value: 0 }, bloom: { value: 0.95 }, blur: { value: 0 }, aberr: { value: 0 }, vig: { value: 0.55 }, sm: { value: 0 }, smA: { value: new THREE.Vector2() }, smB: { value: new THREE.Vector2() }, smS: { value: new THREE.Vector2(0.1, 0.1) }, smCol: { value: new THREE.Vector3(0.25, 0.94, 1) }, time: { value: 0 }, grain: { value: 0.03 }, aspect: { value: 1 }, wet: { value: 0.8 }, horizon: { value: 0.56 }, center: { value: new THREE.Vector2(0.5, 0.56) } }, `
+    uniform sampler2D tScene, tB1, tB2, tB3, tRay; uniform float bloom, blur, aberr, vig, time, grain, aspect, wet, horizon, rays, lat, sm; uniform vec2 center, smA, smB, smS; uniform vec3 smCol; varying vec2 vUv;
     float hash(vec2 p){ p = fract(p * vec2(443.897, 441.423)); p += dot(p, p.yx + 19.19); return fract((p.x + p.y) * p.x); }
     void main(){
       vec2 d = vUv - center;
@@ -1430,6 +1432,37 @@ function makePost() {
         vec2 o = d * aberr * r;
         col.r = mix(col.r, texture2D(tScene, vUv + o).r, 0.7);
         col.b = mix(col.b, texture2D(tScene, vUv - o).b, 0.7);
+      }
+      if (sm > 0.002) {
+        float sg = smB.x >= smA.x ? 1.0 : -1.0;
+        float span = abs(smB.x - smA.x);
+        float sx = (vUv.x - smA.x) * sg;
+        float yc = mix(smA.y, smB.y, clamp(sx / max(span, 1e-4), 0.0, 1.0));
+        float vy = abs(vUv.y - yc) / smS.y;
+        if (vy < 1.0 && sx > -smS.x && sx < span + 1.6 * smS.x) {
+          float lh = smS.y * 0.11;
+          float ln = floor((vUv.y - yc) / lh);
+          float h = hash(vec2(ln * 1.37 + 3.1, floor(time * 24.0)));
+          float reach = span + smS.x * (0.4 + 1.2 * h);
+          float m = (1.0 - smoothstep(0.55, 1.0, vy)) * smoothstep(-smS.x, -0.25 * smS.x, sx) * (1.0 - smoothstep(reach * 0.8, reach, sx));
+          float gap = smoothstep(0.08, 0.22, fract((vUv.y - yc) / lh)) * (0.45 + 0.55 * step(0.3, h));
+          vec3 acc = vec3(0.0), mx = vec3(0.0);
+          float back = max(sx, 0.0) + 0.4 * smS.x;
+          for (int i = 0; i < 10; i++) {
+            float t = float(i) / 9.0;
+            vec3 c = texture2D(tScene, vec2(vUv.x - sg * back * t, vUv.y)).rgb;
+            acc += c; mx = max(mx, c);
+          }
+          vec3 sme = (acc * 0.05 + mx * 0.9) * mix(vec3(1.0), smCol * 1.6, 0.55);
+          float a = clamp(sm * m * gap, 0.0, 1.0);
+          float fade = pow(1.0 - clamp(sx / reach, 0.0, 1.0), 0.7);
+          float fl = fract((vUv.y - yc) / lh), core = 1.0 - smoothstep(0.0, 0.18, abs(fl - 0.58));
+          if (abs(sx) < smS.x) {
+            float h2 = hash(vec2(floor((vUv.y - yc) / (smS.y * 0.28)) + 7.7, floor(time * 30.0)));
+            if (h2 > 0.62) col = mix(col, texture2D(tScene, vec2(vUv.x - sg * smS.x * 0.5 * (h2 - 0.62) * 2.6, vUv.y)).rgb, clamp(sm, 0.0, 1.0));
+          }
+          col = mix(col, max(col, sme), a * (0.55 + 0.45 * fade)) + (smCol * (0.18 + 0.82 * core) * (0.5 + 0.7 * h) * 0.55 + sme * 0.22) * a * fade;
+        }
       }
       vec3 b = texture2D(tB1, vUv).rgb * 0.8 + texture2D(tB2, vUv).rgb * 0.9 + texture2D(tB3, vUv).rgb * 1.1;
       float below = horizon - vUv.y;
@@ -1482,7 +1515,7 @@ function makePost() {
       const u = compM.uniforms;
       u.tScene.value = main.texture; u.tB1.value = lv[0].texture; u.tB2.value = lv[1].texture; u.tB3.value = lv[2].texture; u.tRay.value = rayRT.texture; u.rays.value = FXS.rays; u.lat.value = FXS.lat || 0;
       u.blur.value = FXS.blur; u.bloom.value = FXS.bloom;
-      u.aberr.value = FXS.aberr;
+      u.aberr.value = FXS.aberr; u.sm.value = FXS.sm; u.smA.value.set(FXS.smA[0], FXS.smA[1]); u.smB.value.set(FXS.smB[0], FXS.smB[1]); u.smS.value.set(FXS.smS[0], FXS.smS[1]); u.smCol.value.set(FXS.smCol[0], FXS.smCol[1], FXS.smCol[2]);
       u.time.value = time; u.aspect.value = camera.aspect;
       u.center.value.set(FXS.center[0], FXS.center[1]); u.horizon.value = FXS.horizon; u.wet.value = FXS.wet;
       pass(compM, null);
@@ -4218,7 +4251,7 @@ function switchLane(dir) {
     }
   }
   const col = P.hyper > 0 ? 0xffc23d : tier === 'p' ? 0xff2fa8 : P.combo === 0 && P.J.sc ? 0xff5a5a : 0x3ff0ff;
-  ghost(P.d, col, tier === 'p' ? 1.3 : 1); streak(P.d, LANES[nl], col);
+  ghost(P.d, col, tier === 'p' ? 1.3 : 1); streak(P.d, LANES[nl], col); smearStart(P.d + DR.slide, col, tier === 'p' ? 1.25 : 1);
   P.fromD = P.d; P.toD = LANES[nl]; P.lt = 0; P.lane = nl; P.g2 = false;
   A.whoosh(tier === 'p');
   if (tier) award(tier);
@@ -4248,6 +4281,29 @@ function streak(d0, d1, col) {
 function wave(col) {
   const q = wavePool.find((z) => z.life <= 0) || wavePool[0];
   q.life = q.max = 0.45; q.m.material.color.setHex(col); q.m.visible = true;
+}
+/* lane-change smear: the car's own pixels dragged back across the lane it left, in horizontal brushed lines of uneven length,
+   with a few slices of the body jumping sideways for a frame. Drawn in the composite pass (it needs the post chain): the tail
+   holds on the old lane while you cross (0.12 s), then snaps back to the car; ~0.35 s in all */
+const SM = { t: 9, from: 0, k: 1, col: new THREE.Color() };
+function smearStart(d0, col, k) { SM.t = 0; SM.from = d0; SM.k = k; SM.col.setHex(col); }
+const q_sv = new THREE.Vector3(), q_sa = [0, 0], q_sb = [0, 0], q_sc = [0, 0], q_sd = [0, 0], q_se = [0, 0], q_sf = [0, 0];
+function smProj(s, d, y, out) { worldAt(s, d, _w); pointAt(s, _pp); q_sv.set(_w.x, _pp.y + y, _w.z).project(camera); out[0] = q_sv.x * 0.5 + 0.5; out[1] = q_sv.y * 0.5 + 0.5; return q_sv.z; }
+function smearStep(dt) {
+  SM.t += dt;
+  const env = SM.t < 0.05 ? SM.t / 0.05 : Math.exp(-(SM.t - 0.05) / 0.14);
+  if (!post || !GFX.smear || reduceMotion || env < 0.02) { FXS.sm = 0; return; }
+  camera.updateMatrixWorld();
+  const s = P.s + P.surge, d = P.d + DR.slide, tail = d + (SM.from - d) * (SM.t < 0.12 ? 1 : Math.exp(-(SM.t - 0.12) / 0.1));
+  const z = smProj(s, d, 0.62, q_sa); smProj(s, tail, 0.62, q_sb);
+  if (!(z < 1)) { FXS.sm = 0; return; }
+  smProj(s - PF, d, 0.05, q_sc); smProj(s + PF * 0.4, d, 1.3, q_sd);   // rear bumper and roof: the car's height on screen
+  smProj(s - PF, d - 1.0, 0.62, q_se); smProj(s - PF, d + 1.0, 0.62, q_sf);   // its width at the rear, the widest part on screen
+  const yc = (q_sc[1] + q_sd[1]) / 2, dy = yc - q_sa[1];
+  FXS.smA[0] = q_sa[0]; FXS.smA[1] = yc; FXS.smB[0] = q_sb[0]; FXS.smB[1] = q_sb[1] + dy;
+  FXS.smS[0] = Math.abs(q_sf[0] - q_se[0]) / 2; FXS.smS[1] = Math.abs(q_sd[1] - q_sc[1]) / 2 + 0.004;
+  FXS.smCol[0] = SM.col.r; FXS.smCol[1] = SM.col.g; FXS.smCol[2] = SM.col.b;
+  FXS.sm = env * SM.k;
 }
 function ringBurst() { const r = $('ring'); r.classList.remove('burst'); void r.offsetWidth; r.classList.add('burst'); }
 const _w = {}, _pp = { x: 0, z: 0, h: 0, y: 0, sec: 0, fk: -1 };
@@ -4816,6 +4872,7 @@ function visuals(dt) {
   ring.position.set(camera.position.x, 0, camera.position.z);
   horizonRing.position.set(camera.position.x, 60, camera.position.z);
   water.position.x = camera.position.x; water.position.z = camera.position.z;
+  smearStep(dt);
   /* the beat: from the song's own grid (it follows the tempo drift of the MP3s) */
   let btr = null, bt = time;
   if (state === 'run' || state === 'pause' || (state === 'result' && (TP.on || MUS.on))) { btr = TRACKS[RUN.track]; bt = RUN.clock === 'manual' || !A.ctx ? RUN.t : songTime(); }
@@ -5684,15 +5741,15 @@ async function cdInit() {
 /* ---------- settings: sound, beat delay (with a tap calibration), graphics, a live performance meter, disc storage ---------- */
 /* graphics presets. scale -1 = automatic: start at up to 1.5x and step the resolution down while frames stay slow */
 const GFX_PRESETS = {
-  auto: { scale: -1, post: true, msaa: true, blur: true, rain: true, cones: true, lines: true, shake: true },
-  high: { scale: 1.75, post: true, msaa: true, blur: true, rain: true, cones: true, lines: true, shake: true },
-  mid: { scale: 1.15, post: true, msaa: false, blur: true, rain: true, cones: true, lines: true, shake: true },
-  low: { scale: 0.85, post: false, msaa: false, blur: false, rain: false, cones: false, lines: true, shake: true }
+  auto: { scale: -1, post: true, msaa: true, blur: true, smear: true, rain: true, cones: true, lines: true, shake: true },
+  high: { scale: 1.75, post: true, msaa: true, blur: true, smear: true, rain: true, cones: true, lines: true, shake: true },
+  mid: { scale: 1.15, post: true, msaa: false, blur: true, smear: true, rain: true, cones: true, lines: true, shake: true },
+  low: { scale: 0.85, post: false, msaa: false, blur: false, smear: false, rain: false, cones: false, lines: true, shake: true }
 };
 const GFX = Object.assign({ preset: 'auto', fps: false }, GFX_PRESETS.auto, (() => { const v = store.get('sp_gfx', null); return v && typeof v === 'object' ? v : {}; })());
 const PERF = { t0: 0, n: 0, acc: 0, worst: 0, fps: 0, ms: 0, w: 0, calls: 0, tris: 0 };
 const SET = { open: false, clearArm: 0 };
-const GFX_KEYS = ['post', 'msaa', 'blur', 'rain', 'cones', 'lines', 'shake', 'fps'];
+const GFX_KEYS = ['post', 'msaa', 'blur', 'smear', 'rain', 'cones', 'lines', 'shake', 'fps'];
 function gfxSave() { const o = { preset: GFX.preset, scale: GFX.scale, fps: GFX.fps }; for (const k of GFX_KEYS) o[k] = GFX[k]; store.set('sp_gfx', o); }
 function gfxApply(boot) {
   /* resolution: pinned to the largest step at or under the chosen scale (the steps stop at this screen's pixel ratio) */
@@ -5810,7 +5867,7 @@ function setRender() {
   $('resV').textContent = (GFX.scale < 0 ? say('pAuto') + ' · ' : '') + pr.toFixed(2) + '×';
   const L = Q.levels, i = L.indexOf(pr); $('resPlus').disabled = i === 0; $('resMinus').disabled = i === L.length - 1;
   for (const k of GFX_KEYS) { const b = $('g_' + k); if (b) b.setAttribute('aria-checked', String(!!GFX[k])); }
-  { const b = $('g_msaa'); if (b) b.disabled = !GFX.post; }
+  for (const k of ['msaa', 'smear']) { const b = $('g_' + k); if (b) b.disabled = !GFX.post; }   // both live in the post chain
   perfRender(); storeRender(); calRender(); syncRender();
 }
 function openSettings(on) {
@@ -6034,7 +6091,7 @@ async function start() {
       advance(sec) { const n = Math.round(sec * 60); for (let i = 0; i < n; i++) { step(1 / 120); step(1 / 120); manageWorld(false); visuals(1 / 60); if (state === 'run') updateHud(); } },
       perfClock() { RUN.clock = 'perf'; RUN.perf0 = performance.now() - Math.max(0, RUN.t) * 1000; },
       manualClock() { RUN.clock = 'manual'; }, where: () => ({ kind: stI.inst.kind, area: stI.inst.area, jp: stI.inst.jp, mode: stI.mode }), swellProbe: () => ({ sw: +FX.sw.toFixed(3), bld: +M.bld[0].color.r.toFixed(3), sun: SKY.sun ? +SKY.sun.material.uniforms.swell.value.toFixed(3) : null }), carsDbg: () => RUN.act.slice(0, 40).map((c) => { const v = c.m.position.clone().project(camera); return c.lane + '@' + (c.tc - RUN.t).toFixed(2) + ' d' + c.m.position.distanceTo(camera.position).toFixed(0) + ' scr' + v.x.toFixed(2) + ',' + v.y.toFixed(2) + ',' + v.z.toFixed(3) + ' tid' + c.tid; }), ti: () => TI.map((q) => q.n + ':' + q.meshes[0].count + ':' + q.meshes[0].visible).join(' '), DR, tryDrift, releaseDrift, gates: () => { const m = new THREE.Matrix4(), v = new THREE.Vector3(), out = []; for (let i = 0; i < gateMesh.count; i++) { gateMesh.getMatrixAt(i, m); v.setFromMatrixPosition(m); const d = v.distanceTo(camera.position); v.project(camera); const c = new THREE.Color(); gateMesh.getColorAt(i, c); out.push(d.toFixed(0) + 'm scr' + v.x.toFixed(2) + ',' + v.y.toFixed(2) + ',' + v.z.toFixed(3) + ' col' + c.r.toFixed(2)); } return { n: GATES.length, count: gateMesh.count, vis: gateMesh.visible, inScene: !!gateMesh.parent, out }; },
-      sim(sec, bot) { const n = Math.round(sec * 120); for (let i = 0; i < n && state === 'run'; i++) { if (bot) bot(); step(1 / 120); if (i % 2) { manageWorld(false); visuals(1 / 60); } } }, chart: () => RUN.chart, FX, info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries, tex: renderer.info.memory.textures }), buildChart, FORM, intensityAt, slotAt, vfdRender, RADIO, LOCKDBG, CD, CDB, BEATAN, cdImport, cdRetempo, cdEject, cdBand, seekBy, autoDrifts, get post() { return post; }, GFX, CAL, AOFF, A, calTap, PERF, gfxPreset
+      sim(sec, bot) { const n = Math.round(sec * 120); for (let i = 0; i < n && state === 'run'; i++) { if (bot) bot(); step(1 / 120); if (i % 2) { manageWorld(false); visuals(1 / 60); } } }, chart: () => RUN.chart, FX, info: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, geos: renderer.info.memory.geometries, tex: renderer.info.memory.textures }), buildChart, FORM, intensityAt, slotAt, vfdRender, RADIO, LOCKDBG, CD, CDB, BEATAN, cdImport, cdRetempo, cdEject, cdBand, seekBy, autoDrifts, get post() { return post; }, FXS, GFX, CAL, AOFF, A, calTap, PERF, gfxPreset
     };
   }
   last = performance.now();
