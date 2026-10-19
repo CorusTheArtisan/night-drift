@@ -488,6 +488,7 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
           <button class="tgl" id="g_cones" type="button" role="switch"><i></i><span data-i18n="gCones">路灯光束</span></button>
           <button class="tgl" id="g_lines" type="button" role="switch"><i></i><span data-i18n="gLines">速度线</span></button>
           <button class="tgl" id="g_shake" type="button" role="switch"><i></i><span data-i18n="gShake">镜头晃动</span></button>
+          <button class="tgl" id="g_rings" type="button" role="switch"><i></i><span data-i18n="gRings">判定光圈</span></button>
           <button class="tgl" id="g_fps" type="button" role="switch"><i></i><span data-i18n="gFps">游戏中显示帧率</span></button>
         </div>
       </div>
@@ -579,7 +580,7 @@ const I18N = {
     delayNote: '声音比画面晚就往 + 调（每下 5 ms）；蓝牙耳机通常 +150 ~ +250 ms。也可以点「校准」：先听 4 下，再跟着嗒声点 8 下，自动测出延迟。',
     calTap: '跟着嗒声点这里（或空格）', calLead: '先听 4 下…', calDone: '已设为', calN: ' 下', calFew: '点得太少，再试一次',
     setGfx: '画质', pAuto: '自动', pHigh: '高', pMid: '中', pLow: '低', pCustomNote: '当前：自定义（改过单项）', resL: '分辨率',
-    gPost: '泛光与路面反光', gMsaa: '抗锯齿', gBlur: '速度模糊', gSmear: '换道拉丝残影', gRain: '雨滴', gCones: '路灯光束', gLines: '速度线', gShake: '镜头晃动', gFps: '游戏中显示帧率',
+    gPost: '泛光与路面反光', gMsaa: '抗锯齿', gBlur: '速度模糊', gSmear: '换道拉丝残影', gRain: '雨滴', gCones: '路灯光束', gLines: '速度线', gShake: '镜头晃动', gRings: '判定光圈', gFps: '游戏中显示帧率',
     setPerf: '性能', pfOk: '流畅', pfMid: '一般', pfBad: '吃力', pfWorst: '最慢帧',
     pfNote: '在这一页实时测量（白线 = 60 FPS 的 16.7 ms）。自动画质会在持续掉帧时降低分辨率；泛光与抗锯齿最吃显卡。',
     setStore: '导入歌曲缓存', discUnit: '张', noDiscs: '还没有导入的歌', clearAll: '清空碟片', clearQ: '再按一次确认',
@@ -601,7 +602,7 @@ const I18N = {
     delayNote: 'If the sound arrives later than the picture, go + (5 ms a step); Bluetooth headphones are usually +150 to +250 ms. Or CALIBRATE: listen to 4 clicks, tap along to the next 8, and the delay is measured.',
     calTap: 'TAP ON EACH CLICK (OR SPACE)', calLead: 'LISTEN FOR 4…', calDone: 'SET TO', calN: ' taps', calFew: 'TOO FEW TAPS, TRY AGAIN',
     setGfx: 'GRAPHICS', pAuto: 'AUTO', pHigh: 'HIGH', pMid: 'MEDIUM', pLow: 'LOW', pCustomNote: 'Now: custom (a single setting was changed)', resL: 'RESOLUTION',
-    gPost: 'BLOOM & WET ROAD', gMsaa: 'ANTI-ALIASING', gBlur: 'SPEED BLUR', gSmear: 'LANE-CHANGE SMEAR', gRain: 'RAIN', gCones: 'LAMP BEAMS', gLines: 'SPEED LINES', gShake: 'CAMERA SHAKE', gFps: 'FPS IN GAME',
+    gPost: 'BLOOM & WET ROAD', gMsaa: 'ANTI-ALIASING', gBlur: 'SPEED BLUR', gSmear: 'LANE-CHANGE SMEAR', gRain: 'RAIN', gCones: 'LAMP BEAMS', gLines: 'SPEED LINES', gShake: 'CAMERA SHAKE', gRings: 'HIT RINGS', gFps: 'FPS IN GAME',
     setPerf: 'PERFORMANCE', pfOk: 'SMOOTH', pfMid: 'OK', pfBad: 'STRUGGLING', pfWorst: 'worst',
     pfNote: 'Measured live on this page (white line = 16.7 ms, 60 FPS). AUTO lowers the resolution when frames keep dropping; bloom and anti-aliasing cost the GPU most.',
     setStore: 'IMPORTED SONGS', discUnit: 'discs', noDiscs: 'No discs yet', clearAll: 'CLEAR DISCS', clearQ: 'PRESS AGAIN',
@@ -4279,6 +4280,7 @@ function streak(d0, d1, col) {
   }
 }
 function wave(col) {
+  if (!GFX.rings) return;   // settings: hit rings off
   const q = wavePool.find((z) => z.life <= 0) || wavePool[0];
   q.life = q.max = 0.45; q.m.material.color.setHex(col); q.m.visible = true;
 }
@@ -4471,19 +4473,124 @@ function driftVisuals(dt) {
     if (on) {
       const pv = DR.skid[i]; if (pv && Math.hypot(wx - pv[0], wz - pv[1]) > 0.8) addSkid(pv[0], pv[1], wx, wz, car.position.y);
       if (!pv || Math.hypot(wx - pv[0], wz - pv[1]) > 0.8) DR.skid[i] = [wx, wz];
-      if (Math.random() < 34 * dt) {
-        const sm = smoke.find((q) => q.life <= 0);
-        if (sm) {
-          sm.life = sm.max = 0.55 + Math.random() * 0.35; sm.str = 1; sm.sp.visible = true;
-          sm.sp.position.set(wx, car.position.y + 0.35, wz);
-          const tf = Math.sin(_pp.h), tz = Math.cos(_pp.h), v = P.v * 0.86;
-          sm.vx = tf * v + nx * lx * 3 + (Math.random() - 0.5) * 2; sm.vy = 0.8 + Math.random(); sm.vz = tz * v + nz * lx * 3 + (Math.random() - 0.5) * 2;
-          sm.sp.material.color.setHex(0xb9bccf);
-        }
-      }
     } else DR.skid[i] = null;
   });
-  updateSmoke(dt);
+  updateSmoke(dt); updateDriftTrail(dt);
+}
+/* ---------- drift trail: light and lightning off the rear tyres (it replaced the tyre smoke) ----------
+   Each rear tyre leaves a world-space history; the path is resampled every 0.3 m and drawn, in one additive mesh, as
+   - 3 light streaks per tyre: thin flat ribbons that follow the path exactly, blue-white going violet;
+   - 4 filaments per tyre: the same path pushed off by jagged noise that is re-rolled every other frame (so it crackles),
+     tight at the tyre and fanning out with distance, magenta and lavender, white-hot where they leave the tyre;
+   plus a glow on each contact patch and sparks shed along the way. Released, the trail detaches and fades in 0.4 s */
+const DP = { N: 40, step: 0.25, life: 0.42, H: [[], []], k: 0, mesh: null, glows: [], pts: null, sp: [], seed: 0, tick: 0, R: [] };
+const DP_STREAK = [[-0.12, 0.03], [0, 0.045], [0.12, 0.028]], DP_FIL = 4;
+const dpHash = (a) => { const v = Math.sin(a * 12.9898 + 78.233) * 43758.5453; return v - Math.floor(v); };
+function buildDriftTrail() {
+  const RB = 2 * (DP_STREAK.length + DP_FIL), N = DP.N, g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(RB * N * 2 * 3), 3));
+  g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(RB * N * 2 * 3), 3));
+  const idx = []; for (let r = 0; r < RB; r++) for (let i = 0; i < N - 1; i++) { const a = (r * N + i) * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+  g.setIndex(idx);
+  DP.mesh = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+  DP.mesh.frustumCulled = false; DP.mesh.visible = false; DP.mesh.renderOrder = 5; scene.add(DP.mesh);
+  for (let i = 0; i < 2; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: TX.glow, color: 0xe2d2ff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0, fog: false })); sp.visible = false; scene.add(sp); DP.glows.push(sp); }
+  const NS = 70; DP.pts = new THREE.Points(pointsGeo(new Array(NS * 3).fill(0), new Array(NS * 3).fill(0)), new THREE.PointsMaterial({ size: 0.2, map: TX.glow, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+  DP.pts.frustumCulled = false; DP.pts.visible = false; scene.add(DP.pts);
+  for (let i = 0; i < NS; i++) DP.sp.push({ life: 0, max: 1, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, c: 0 });
+  for (let i = 0; i < N; i++) DP.R.push({ x: 0, y: 0, z: 0, a: 0, k: 0, d: 0, ok: false });
+}
+/* the history resampled at fixed spacing from the tyre backwards (R[i].d = distance along the path) */
+function dpResample(H) {
+  const R = DP.R; let seg = 0, acc = 0;
+  for (let i = 0; i < DP.N; i++) {
+    const want = i * DP.step, r = R[i]; r.ok = false;
+    while (seg < H.length - 1) {
+      const p = H[seg], q = H[seg + 1], L = Math.hypot(q.x - p.x, q.y - p.y, q.z - p.z);
+      if (acc + L >= want) { const u = L > 1e-6 ? (want - acc) / L : 0; r.x = p.x + (q.x - p.x) * u; r.y = p.y + (q.y - p.y) * u; r.z = p.z + (q.z - p.z) * u; r.a = p.a + (q.a - p.a) * u; r.k = p.k + (q.k - p.k) * u; r.d = want; r.ok = true; break; }
+      acc += L; seg++;
+    }
+    if (!r.ok) { const l = H[H.length - 1] || { x: 0, y: 0, z: 0, a: 9, k: 0 }; r.x = l.x; r.y = l.y; r.z = l.z; r.a = DP.life; r.k = 0; r.d = want; }
+  }
+}
+const _dq = new THREE.Vector3();
+function updateDriftTrail(dt) {
+  if (!DP.mesh) return;
+  const on = DR.on && state === 'run';
+  DP.k += ((on ? 1 : 0) - DP.k) * (1 - Math.exp(-dt * (on ? 14 : 5)));
+  if (dt > 0) {
+    car.updateMatrixWorld();
+    for (let w = 0; w < 2; w++) {
+      const H = DP.H[w];
+      for (const q of H) q.a += dt;
+      if (on) { _dq.set(w ? -0.92 : 0.92, 0.05, -1.38); car.localToWorld(_dq); H.unshift({ x: _dq.x, y: _dq.y, z: _dq.z, a: 0, k: DP.k }); }
+      while (H.length > 90 || (H.length && H[H.length - 1].a > DP.life)) H.pop();
+    }
+    if (++DP.tick % 2 === 0) DP.seed = (DP.seed + 1) % 9973;
+  }
+  const live = DP.H[0].length > 1 || DP.H[1].length > 1;
+  DP.mesh.visible = live;
+  const pos = DP.mesh.geometry.getAttribute('position'), col = DP.mesh.geometry.getAttribute('color'), N = DP.N, cp = camera.position;
+  let rb = 0;
+  for (let w = 0; w < 2; w++) {
+    const H = DP.H[w];
+    if (H.length > 1) dpResample(H); else for (const r of DP.R) { r.ok = false; r.k = 0; }
+    const R = DP.R, sd = w ? 1 : -1;
+    /* streaks */
+    for (const [off, hw] of DP_STREAK) {
+      for (let i = 0; i < N; i++) {
+        const r = R[i], r2 = R[Math.min(N - 1, i + 1)], r0 = R[Math.max(0, i - 1)];
+        let tx = r0.x - r2.x, tz = r0.z - r2.z; const tl = Math.hypot(tx, tz) || 1; tx /= tl; tz /= tl;
+        const sx = tz, sz = -tx, x = r.x + sx * off * sd, z = r.z + sz * off * sd;
+        const f = r.ok ? 0.8 * Math.pow(Math.max(0, 1 - r.a / DP.life), 1.2) * Math.max(0, 1 - r.d / 8) * r.k : 0;
+        const hot = Math.max(0, 1 - r.d / 0.9), v = (rb * N + i) * 2, ww = hw;
+        pos.setXYZ(v, x - sx * ww, r.y + 0.012, z - sz * ww); pos.setXYZ(v + 1, x + sx * ww, r.y + 0.012, z + sz * ww);
+        const cr = (0.5 + 0.5 * hot) * f, cg = (0.5 + 0.5 * hot - 0.18 * Math.min(1, r.d / 6)) * f, cb = f;
+        col.setXYZ(v, cr, cg, cb); col.setXYZ(v + 1, cr, cg, cb);
+      }
+      rb++;
+    }
+    /* filaments */
+    for (let j = 0; j < DP_FIL; j++) {
+      const fl = 0.55 + 0.45 * dpHash(DP.seed * 7.1 + j * 3.3 + w * 11), pink = j % 2 === 0;
+      for (let i = 0; i < N; i++) {
+        const r = R[i], r2 = R[Math.min(N - 1, i + 1)], r0 = R[Math.max(0, i - 1)];
+        let tx = r0.x - r2.x, ty = r0.y - r2.y, tz = r0.z - r2.z; const tl = Math.hypot(tx, ty, tz) || 1; tx /= tl; ty /= tl; tz /= tl;
+        const hx = tz, hz = -tx;   // horizontal side
+        const amp = 0.03 + 0.07 * r.d, n1 = Math.sin(r.d * 4.1 + j * 2.1 + time * 31 + w) * 0.55 + Math.sin(r.d * 9.7 + j * 5.3 - time * 47) * 0.25 + (dpHash(i * 1.7 + j * 13.1 + DP.seed * 3.7 + w * 5) - 0.5) * 0.7;
+        const n2 = Math.abs(Math.sin(r.d * 1.7 + j * 1.3 + time * 23)) * 0.6 + dpHash(i * 2.9 + j * 7.7 + DP.seed * 1.3 + w) * 0.5;
+        const x = r.x + hx * (amp * n1 + sd * 0.05 * j), y = r.y + 0.04 + amp * 0.55 * n2, z = r.z + hz * (amp * n1 + sd * 0.05 * j);
+        /* camera-facing width so the filament reads from any angle */
+        let vx = cp.x - x, vy = cp.y - y, vz = cp.z - z;
+        let cx = ty * vz - tz * vy, cy = tz * vx - tx * vz, cz = tx * vy - ty * vx; const cl = Math.hypot(cx, cy, cz) || 1;
+        const hw = pink ? 0.03 : 0.022; cx *= hw / cl; cy *= hw / cl; cz *= hw / cl;
+        const f = r.ok ? Math.pow(Math.max(0, 1 - r.a / DP.life), 1.1) * Math.max(0, 1 - r.d / 7) * r.k * fl : 0;
+        const hot = Math.max(0, 1 - r.d / 1.4), v = (rb * N + i) * 2;
+        pos.setXYZ(v, x - cx, y - cy, z - cz); pos.setXYZ(v + 1, x + cx, y + cy, z + cz);
+        const cr = (pink ? 1 : 0.86) * f, cg = ((pink ? 0.32 : 0.74) + (pink ? 0.6 : 0.26) * hot) * f, cb = (pink ? 0.92 : 1) * f;
+        col.setXYZ(v, cr, cg, cb); col.setXYZ(v + 1, cr, cg, cb);
+        /* sparks shed off the filaments */
+        if (on && dt > 0 && i > 1 && i < 14 && Math.random() < 0.9 * dt * 8) {
+          const s = DP.sp.find((q) => q.life <= 0);
+          if (s) { s.life = s.max = 0.18 + Math.random() * 0.22; s.x = x; s.y = y; s.z = z; s.vx = hx * (Math.random() - 0.5) * 6; s.vy = 0.5 + Math.random() * 2.5; s.vz = hz * (Math.random() - 0.5) * 6; s.c = pink ? 0 : 1; }
+        }
+      }
+      rb++;
+    }
+    /* contact glow */
+    const g = DP.glows[w], h0 = H[0];
+    g.visible = DP.k > 0.03 && !!h0 && h0.a < 0.05;
+    if (g.visible) { g.position.set(h0.x, h0.y + 0.12, h0.z); const sc = 1.1 + 0.5 * dpHash(DP.seed * 1.9 + w); g.scale.set(sc * 1.4, sc, 1); g.material.opacity = 0.85 * DP.k; }
+  }
+  pos.needsUpdate = true; col.needsUpdate = true;
+  /* sparks */
+  const sp = DP.pts.geometry.getAttribute('position'), sc2 = DP.pts.geometry.getAttribute('color'); let anyS = false;
+  DP.sp.forEach((s, i) => {
+    if (s.life > 0) { s.life -= dt; s.x += s.vx * dt; s.y += s.vy * dt; s.z += s.vz * dt; s.vy -= 9 * dt; }
+    const f = s.life > 0 ? s.life / s.max : 0; if (f > 0) anyS = true;
+    sp.setXYZ(i, s.x, s.y, s.z); sc2.setXYZ(i, f * (s.c ? 0.9 : 1), f * (s.c ? 0.85 : 0.55), f);
+  });
+  sp.needsUpdate = true; sc2.needsUpdate = true; DP.pts.visible = anyS;
 }
 function driftHud() {
   const z = DR.z, el = H.drift;
@@ -5746,10 +5853,10 @@ const GFX_PRESETS = {
   mid: { scale: 1.15, post: true, msaa: false, blur: true, smear: true, rain: true, cones: true, lines: true, shake: true },
   low: { scale: 0.85, post: false, msaa: false, blur: false, smear: false, rain: false, cones: false, lines: true, shake: true }
 };
-const GFX = Object.assign({ preset: 'auto', fps: false }, GFX_PRESETS.auto, (() => { const v = store.get('sp_gfx', null); return v && typeof v === 'object' ? v : {}; })());
+const GFX = Object.assign({ preset: 'auto', fps: false, rings: true }, GFX_PRESETS.auto, (() => { const v = store.get('sp_gfx', null); return v && typeof v === 'object' ? v : {}; })());
 const PERF = { t0: 0, n: 0, acc: 0, worst: 0, fps: 0, ms: 0, w: 0, calls: 0, tris: 0 };
 const SET = { open: false, clearArm: 0 };
-const GFX_KEYS = ['post', 'msaa', 'blur', 'smear', 'rain', 'cones', 'lines', 'shake', 'fps'];
+const GFX_KEYS = ['post', 'msaa', 'blur', 'smear', 'rain', 'cones', 'lines', 'shake', 'rings', 'fps'];
 function gfxSave() { const o = { preset: GFX.preset, scale: GFX.scale, fps: GFX.fps }; for (const k of GFX_KEYS) o[k] = GFX[k]; store.set('sp_gfx', o); }
 function gfxApply(boot) {
   /* resolution: pinned to the largest step at or under the chosen scale (the steps stop at this screen's pixel ratio) */
@@ -5767,7 +5874,7 @@ function gfxApply(boot) {
   const fh = $('fpsHud'); if (fh) fh.hidden = !GFX.fps;
 }
 function gfxPreset(p) { if (!GFX_PRESETS[p]) return; GFX.preset = p; Object.assign(GFX, GFX_PRESETS[p]); gfxApply(); gfxSave(); setRender(); }
-function gfxToggle(k) { GFX[k] = !GFX[k]; if (k !== 'fps') GFX.preset = 'custom'; gfxApply(); gfxSave(); setRender(); }
+function gfxToggle(k) { GFX[k] = !GFX[k]; if (k !== 'fps' && k !== 'rings') GFX.preset = 'custom'; gfxApply(); gfxSave(); setRender(); }
 function gfxRes(d) {   // d +1 = sharper (a larger pixel ratio; the step list runs from large to small)
   const L = Q.levels; let i = L.indexOf(renderer.getPixelRatio()); if (i < 0) i = Q.i;
   i = clamp(i - d, 0, L.length - 1); GFX.scale = L[i]; GFX.preset = 'custom'; gfxApply(); gfxSave(); setRender();
@@ -6060,7 +6167,7 @@ async function start() {
   buildTrafficInst();
   buildFx();
   buildPulseFx();
-  buildDriftFx();
+  buildDriftFx(); buildDriftTrail();
   buildSpeedLines();
   buildSynthSky(); buildRain(); buildCones(); buildTrails(); buildGuide();
   keepAlphaAll(scene);
